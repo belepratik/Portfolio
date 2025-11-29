@@ -1,6 +1,7 @@
 package com.portfolio.service;
 
 import com.portfolio.dto.TradeSummaryDTO;
+import com.portfolio.model.CloseReason;
 import com.portfolio.model.Trade;
 import com.portfolio.model.TradeStatus;
 import com.portfolio.model.TradeType;
@@ -52,12 +53,17 @@ public class TradeService {
         trade.setExitPrice(tradeDetails.getExitPrice());
         trade.setQuantity(tradeDetails.getQuantity());
         trade.setLeverage(tradeDetails.getLeverage());
+        trade.setPositionSize(tradeDetails.getPositionSize());
         trade.setFees(tradeDetails.getFees());
         trade.setExchange(tradeDetails.getExchange());
         trade.setStatus(tradeDetails.getStatus());
         trade.setNotes(tradeDetails.getNotes());
         trade.setStopLoss(tradeDetails.getStopLoss());
         trade.setTakeProfit(tradeDetails.getTakeProfit());
+        trade.setLiquidationPrice(tradeDetails.getLiquidationPrice());
+        trade.setTpHit(tradeDetails.getTpHit());
+        trade.setLiquidated(tradeDetails.getLiquidated());
+        trade.setCloseReason(tradeDetails.getCloseReason());
         trade.setTradeDate(tradeDetails.getTradeDate());
         trade.setCloseDate(tradeDetails.getCloseDate());
 
@@ -71,15 +77,27 @@ public class TradeService {
         tradeRepository.delete(trade);
     }
 
-    // Close a trade
-    public Trade closeTrade(Long id, BigDecimal exitPrice, BigDecimal fees) {
+    // Close a trade with reason
+    public Trade closeTrade(Long id, BigDecimal exitPrice, CloseReason closeReason) {
         Trade trade = tradeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trade not found with id: " + id));
 
         trade.setExitPrice(exitPrice);
-        trade.setFees(fees);
         trade.setStatus(TradeStatus.CLOSED);
         trade.setCloseDate(LocalDateTime.now());
+        trade.setCloseReason(closeReason);
+        
+        // Set the appropriate flags based on close reason
+        if (closeReason == CloseReason.TP_HIT) {
+            trade.setTpHit(true);
+            trade.setLiquidated(false);
+        } else if (closeReason == CloseReason.LIQUIDATED) {
+            trade.setTpHit(false);
+            trade.setLiquidated(true);
+        } else {
+            trade.setTpHit(false);
+            trade.setLiquidated(false);
+        }
 
         return tradeRepository.save(trade);
     }

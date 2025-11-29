@@ -77,6 +77,15 @@ function TradeList() {
     }).format(value);
   };
 
+  // Format price compactly (no $ sign, shorter)
+  const formatPrice = (value) => {
+    if (value === null || value === undefined) return '-';
+    if (value >= 1000) {
+      return value.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    }
+    return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
   // Calculate current value based on price movement and leverage
   const calculateCurrentValue = (trade, livePrice) => {
     if (!trade.positionSize || !trade.entryPrice) return null;
@@ -99,6 +108,16 @@ function TradeList() {
   // Get 24h change for a coin
   const get24hChange = (coin) => {
     return livePrices[coin?.toUpperCase()]?.change24h || null;
+  };
+
+  // Get close reason display text
+  const getCloseReasonText = (reason) => {
+    switch (reason) {
+      case 'TP_HIT': return '🎯 TP';
+      case 'LIQUIDATED': return '💀 Liq';
+      case 'MANUAL': return '✋';
+      default: return '';
+    }
   };
 
   const formatDate = (dateString) => {
@@ -143,18 +162,20 @@ function TradeList() {
           <p>Start by adding your first trade!</p>
         </div>
       ) : (
-        <div className="table-container">
-          <table className="trades-table">
+        <div className="table-container" style={{ overflowX: 'auto' }}>
+          <table className="trades-table" style={{ minWidth: '1100px' }}>
             <thead>
               <tr>
                 <th>Date</th>
                 <th>Coin</th>
                 <th>Type</th>
                 <th>Exchange</th>
+                <th>Lev</th>
                 <th>Entry</th>
-                <th>Current Price</th>
-                <th>Principal</th>
-                <th>Current Value</th>
+                <th>Current</th>
+                <th>TP</th>
+                <th>Liq</th>
+                <th>Size</th>
                 <th>P&L</th>
                 <th>Status</th>
                 <th>Actions</th>
@@ -170,19 +191,25 @@ function TradeList() {
                 
                 return (
                   <tr key={trade.id}>
-                    <td>{formatDate(trade.tradeDate)}</td>
+                    <td style={{ whiteSpace: 'nowrap', fontSize: '0.8rem' }}>{formatDate(trade.tradeDate)}</td>
                     <td><strong>{trade.coin}</strong></td>
                     <td>
                       <span className={`badge ${trade.tradeType?.toLowerCase()}`}>
                         {trade.tradeType}
                       </span>
                     </td>
-                    <td>{trade.exchange || '-'}</td>
-                    <td>{formatCurrency(trade.entryPrice)}</td>
-                    <td>
+                    <td style={{ fontSize: '0.85rem' }}>{trade.exchange || '-'}</td>
+                    <td>{trade.leverage}x</td>
+                    <td style={{ whiteSpace: 'nowrap' }}>{formatPrice(trade.entryPrice)}</td>
+                    <td style={{ whiteSpace: 'nowrap' }}>
                       {displayPrice ? (
                         <div>
-                          <span>{formatCurrency(displayPrice)}</span>
+                          <span>{formatPrice(displayPrice)}</span>
+                          {trade.status === 'CLOSED' && trade.closeReason && (
+                            <div style={{ fontSize: '0.7rem', color: '#888' }}>
+                              {getCloseReasonText(trade.closeReason)}
+                            </div>
+                          )}
                           {change24h && trade.status === 'OPEN' && (
                             <div style={{ fontSize: '0.7rem' }} className={change24h >= 0 ? 'profit' : 'loss'}>
                               {change24h >= 0 ? '▲' : '▼'} {Math.abs(change24h).toFixed(2)}%
@@ -191,11 +218,16 @@ function TradeList() {
                         </div>
                       ) : '-'}
                     </td>
-                    <td>{formatCurrency(trade.positionSize)}</td>
-                    <td className={currentValue > trade.positionSize ? 'profit' : currentValue < trade.positionSize ? 'loss' : ''}>
-                      {currentValue ? formatCurrency(currentValue) : '-'}
+                    <td className={trade.tpHit ? 'profit' : ''} style={{ whiteSpace: 'nowrap' }}>
+                      {trade.takeProfit ? formatPrice(trade.takeProfit) : '-'}
+                      {trade.tpHit && <span style={{ marginLeft: '0.25rem' }}>✓</span>}
                     </td>
-                    <td className={pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : ''}>
+                    <td className={trade.liquidated ? 'loss' : ''} style={{ whiteSpace: 'nowrap' }}>
+                      {trade.liquidationPrice ? formatPrice(trade.liquidationPrice) : '-'}
+                      {trade.liquidated && <span style={{ marginLeft: '0.25rem' }}>✗</span>}
+                    </td>
+                    <td style={{ whiteSpace: 'nowrap' }}>${trade.positionSize}</td>
+                    <td className={pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : ''} style={{ whiteSpace: 'nowrap' }}>
                       {pnl !== null ? formatCurrency(pnl) : '-'}
                     </td>
                     <td>
@@ -204,24 +236,19 @@ function TradeList() {
                       </span>
                     </td>
                     <td>
-                      <div className="action-buttons">
+                      <div className="action-buttons" style={{ display: 'flex', gap: '0.25rem', flexWrap: 'nowrap' }}>
                         <Link to={`/trade/${trade.id}`} className="btn btn-primary btn-sm">
                           View
                         </Link>
-                        {trade.status !== 'CLOSED' ? (
-                          <Link to={`/edit-trade/${trade.id}`} className="btn btn-secondary btn-sm">
-                            Edit
-                          </Link>
-                        ) : (
-                          <span className="btn btn-secondary btn-sm" style={{ opacity: 0.5, cursor: 'not-allowed' }}>
-                            Edit
-                          </span>
-                        )}
+                        <Link to={`/edit-trade/${trade.id}`} className="btn btn-secondary btn-sm" 
+                          style={trade.status === 'CLOSED' ? { opacity: 0.5, pointerEvents: 'none' } : {}}>
+                          Edit
+                        </Link>
                         <button
                           onClick={() => handleDelete(trade.id)}
                           className="btn btn-danger btn-sm"
                         >
-                          Delete
+                          Del
                         </button>
                       </div>
                     </td>

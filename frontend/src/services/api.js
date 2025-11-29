@@ -41,9 +41,9 @@ export const tradeService = {
     return response.data;
   },
 
-  // Close trade
-  closeTrade: async (id, exitPrice, fees = 0) => {
-    const response = await api.patch(`/trades/${id}/close`, { exitPrice, fees });
+  // Close trade with reason (TP_HIT, LIQUIDATED, MANUAL)
+  closeTrade: async (id, exitPrice, closeReason) => {
+    const response = await api.patch(`/trades/${id}/close`, { exitPrice, closeReason });
     return response.data;
   },
 
@@ -115,6 +115,63 @@ export const investmentService = {
   // Get total invested
   getTotalInvested: async (tradeId) => {
     const response = await api.get(`/trades/${tradeId}/investments/total`);
+    return response.data;
+  },
+};
+
+// Exchange Wallet API services
+export const walletService = {
+  // Get all wallets
+  getAllWallets: async () => {
+    const response = await api.get('/wallets');
+    return response.data;
+  },
+
+  // Get wallet by ID
+  getWalletById: async (id) => {
+    const response = await api.get(`/wallets/${id}`);
+    return response.data;
+  },
+
+  // Get wallet by exchange name
+  getWalletByExchange: async (exchangeName) => {
+    const response = await api.get(`/wallets/exchange/${exchangeName}`);
+    return response.data;
+  },
+
+  // Create wallet
+  createWallet: async (wallet) => {
+    const response = await api.post('/wallets', wallet);
+    return response.data;
+  },
+
+  // Update wallet
+  updateWallet: async (id, wallet) => {
+    const response = await api.put(`/wallets/${id}`, wallet);
+    return response.data;
+  },
+
+  // Delete wallet
+  deleteWallet: async (id) => {
+    const response = await api.delete(`/wallets/${id}`);
+    return response.data;
+  },
+
+  // Get wallet summary (with used/available balance)
+  getWalletSummary: async (id) => {
+    const response = await api.get(`/wallets/${id}/summary`);
+    return response.data;
+  },
+
+  // Get all wallet summaries
+  getAllWalletSummaries: async () => {
+    const response = await api.get('/wallets/summaries');
+    return response.data;
+  },
+
+  // Get total balance across all exchanges
+  getTotalBalance: async () => {
+    const response = await api.get('/wallets/total-balance');
     return response.data;
   },
 };
