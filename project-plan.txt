@@ -1,0 +1,186 @@
+================================================================================
+                    CRYPTO PORTFOLIO TRACKER - PROJECT PLAN
+                         (Futures/Day Trading Focused)
+================================================================================
+
+PROJECT OVERVIEW:
+-----------------
+A web application to track cryptocurrency futures trading activities including
+profits, losses, positions, and overall portfolio performance.
+
+--------------------------------------------------------------------------------
+                              CORE FEATURES
+--------------------------------------------------------------------------------
+
+1. TRADE ENTRY (BASIC REQUIREMENTS)
+   - Coin/Token Name (e.g., BTC, ETH, SOL)
+   - Trade Type: LONG or SHORT
+   - Entry Price
+   - Exit Price
+   - Amount/Quantity
+   - Leverage Used (e.g., 5x, 10x, 20x)
+   - Profit/Loss (auto-calculated or manual entry)
+   - Trade Date & Time
+   - Exchange Name (Binance, Bybit, etc.)
+
+2. ADDITIONAL RECOMMENDED FIELDS FOR DAY/FUTURES TRADING
+   - Position Size (in USDT or base currency)
+   - Funding Fees Paid
+   - Trading Fees
+   - Liquidation Price (for reference)
+   - Stop Loss Price
+   - Take Profit Price
+   - Trade Status: OPEN / CLOSED
+   - Notes/Comments for each trade
+
+3. DASHBOARD FEATURES
+   - Total Profit/Loss (Daily, Weekly, Monthly, All-time)
+   - Win Rate Percentage
+   - Average Profit per Trade
+   - Average Loss per Trade
+   - Risk/Reward Ratio
+   - Most Traded Coins
+   - Best/Worst Performing Coin
+
+4. REPORTING
+   - Filter trades by date range
+   - Filter by coin
+   - Filter by trade type (Long/Short)
+   - Export to CSV/Excel
+
+--------------------------------------------------------------------------------
+                           TECHNOLOGY STACK
+--------------------------------------------------------------------------------
+
+FRONTEND:
+- React.js (with Vite for faster development)
+- Axios (for API calls)
+- React Router (for navigation)
+- CSS/Bootstrap or Tailwind CSS (for styling)
+
+BACKEND:
+- Spring Boot 3.x
+- Spring Data JPA
+- MySQL Database
+- Maven (build tool)
+
+DATABASE TABLES:
+1. trades - Main table for all trade entries
+2. coins - Reference table for cryptocurrencies (optional)
+3. users - For future multi-user support (optional for MVP)
+
+--------------------------------------------------------------------------------
+                           PROJECT STRUCTURE
+--------------------------------------------------------------------------------
+
+Portfolio2/
+├── frontend/                 # React Application
+│   ├── src/
+│   │   ├── components/      # Reusable components
+│   │   ├── pages/           # Page components
+│   │   ├── services/        # API service calls
+│   │   └── App.jsx
+│   ├── package.json
+│   └── vite.config.js
+│
+├── backend/                  # Spring Boot Application
+│   ├── src/
+│   │   ├── main/
+│   │   │   ├── java/com/portfolio/
+│   │   │   │   ├── controller/
+│   │   │   │   ├── model/
+│   │   │   │   ├── repository/
+│   │   │   │   ├── service/
+│   │   │   │   └── PortfolioApplication.java
+│   │   │   └── resources/
+│   │   │       └── application.properties
+│   │   └── test/
+│   └── pom.xml
+│
+└── project-plan.txt          # This file
+
+--------------------------------------------------------------------------------
+                           MVP (MINIMUM VIABLE PRODUCT)
+--------------------------------------------------------------------------------
+
+PHASE 1 - BASIC CRUD OPERATIONS:
+[x] Plan created
+[ ] Backend Setup - Spring Boot with MySQL connection
+[ ] Create Trade entity/model
+[ ] Create REST API endpoints (CRUD)
+[ ] Frontend Setup - React with Vite
+[ ] Trade Entry Form
+[ ] Trade List Display
+[ ] Edit/Delete Trade functionality
+
+PHASE 2 - CALCULATIONS & DASHBOARD:
+[ ] Auto-calculate P&L based on entry/exit price
+[ ] Dashboard with summary statistics
+[ ] Basic filtering
+
+PHASE 3 - ENHANCEMENTS:
+[ ] Charts and visualizations
+[ ] Export functionality
+[ ] Advanced filtering and sorting
+
+--------------------------------------------------------------------------------
+                           DATABASE SCHEMA
+--------------------------------------------------------------------------------
+
+TABLE: trades
++------------------+---------------+--------------------------------------+
+| Column           | Type          | Description                          |
++------------------+---------------+--------------------------------------+
+| id               | BIGINT (PK)   | Auto-generated ID                    |
+| coin             | VARCHAR(20)   | Coin symbol (BTC, ETH, etc.)         |
+| trade_type       | VARCHAR(10)   | LONG or SHORT                        |
+| entry_price      | DECIMAL(18,8) | Entry price                          |
+| exit_price       | DECIMAL(18,8) | Exit price (null if open)            |
+| quantity         | DECIMAL(18,8) | Amount of coin traded                |
+| leverage         | INT           | Leverage used (1-125)                |
+| position_size    | DECIMAL(18,2) | Position size in USDT                |
+| profit_loss      | DECIMAL(18,2) | Realized P&L                         |
+| profit_loss_pct  | DECIMAL(8,2)  | P&L percentage                       |
+| fees             | DECIMAL(18,2) | Trading + Funding fees               |
+| exchange         | VARCHAR(50)   | Exchange name                        |
+| status           | VARCHAR(10)   | OPEN or CLOSED                       |
+| notes            | TEXT          | Trade notes                          |
+| trade_date       | DATETIME      | When trade was opened                |
+| close_date       | DATETIME      | When trade was closed                |
+| created_at       | DATETIME      | Record creation timestamp            |
+| updated_at       | DATETIME      | Record update timestamp              |
++------------------+---------------+--------------------------------------+
+
+--------------------------------------------------------------------------------
+                           API ENDPOINTS
+--------------------------------------------------------------------------------
+
+GET    /api/trades          - Get all trades (with pagination)
+GET    /api/trades/{id}     - Get single trade
+POST   /api/trades          - Create new trade
+PUT    /api/trades/{id}     - Update trade
+DELETE /api/trades/{id}     - Delete trade
+GET    /api/trades/summary  - Get dashboard summary stats
+GET    /api/trades/filter   - Filter trades by criteria
+
+--------------------------------------------------------------------------------
+                           PREREQUISITES
+--------------------------------------------------------------------------------
+
+1. Java 17 or higher installed
+2. Node.js 18 or higher installed
+3. MySQL Server installed and running
+4. Create database: CREATE DATABASE portfolio_db;
+5. IDE: VS Code or IntelliJ IDEA
+
+--------------------------------------------------------------------------------
+                           NEXT STEPS
+--------------------------------------------------------------------------------
+
+1. Review this plan and confirm requirements
+2. Create backend folder with Spring Boot project
+3. Create frontend folder with React project
+4. Set up database connection
+5. Start implementing CRUD operations
+
+================================================================================
