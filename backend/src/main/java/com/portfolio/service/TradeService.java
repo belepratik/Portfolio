@@ -1,9 +1,12 @@
 package com.portfolio.service;
 
 import com.portfolio.dto.TradeSummaryDTO;
+import com.portfolio.model.CloseReason;
+import com.portfolio.model.ExchangeWallet;
 import com.portfolio.model.Trade;
 import com.portfolio.model.TradeStatus;
 import com.portfolio.model.TradeType;
+import com.portfolio.repository.ExchangeWalletRepository;
 import com.portfolio.repository.TradeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -23,6 +26,7 @@ import java.util.Optional;
 public class TradeService {
 
     private final TradeRepository tradeRepository;
+    private final ExchangeWalletRepository walletRepository;
 
     // Create a new trade
     public Trade createTrade(Trade trade) {
@@ -52,12 +56,17 @@ public class TradeService {
         trade.setExitPrice(tradeDetails.getExitPrice());
         trade.setQuantity(tradeDetails.getQuantity());
         trade.setLeverage(tradeDetails.getLeverage());
+        trade.setPositionSize(tradeDetails.getPositionSize());
         trade.setFees(tradeDetails.getFees());
         trade.setExchange(tradeDetails.getExchange());
         trade.setStatus(tradeDetails.getStatus());
         trade.setNotes(tradeDetails.getNotes());
         trade.setStopLoss(tradeDetails.getStopLoss());
         trade.setTakeProfit(tradeDetails.getTakeProfit());
+        trade.setLiquidationPrice(tradeDetails.getLiquidationPrice());
+        trade.setTpHit(tradeDetails.getTpHit());
+        trade.setLiquidated(tradeDetails.getLiquidated());
+        trade.setCloseReason(tradeDetails.getCloseReason());
         trade.setTradeDate(tradeDetails.getTradeDate());
         trade.setCloseDate(tradeDetails.getCloseDate());
 
@@ -71,17 +80,95 @@ public class TradeService {
         tradeRepository.delete(trade);
     }
 
-    // Close a trade
-    public Trade closeTrade(Long id, BigDecimal exitPrice, BigDecimal fees) {
+    // Close a trade with reason
+    public Trade closeTrade(Long id, BigDecimal exitPrice, CloseReason closeReason) {
         Trade trade = tradeRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Trade not found with id: " + id));
 
         trade.setExitPrice(exitPrice);
-        trade.setFees(fees);
         trade.setStatus(TradeStatus.CLOSED);
         trade.setCloseDate(LocalDateTime.now());
+        trade.setCloseReason(closeReason);
+        
+        // Set the appropriate flags based on close reason
+        if (closeReason == CloseReason.TP_HIT) {
+            trade.setTpHit(true);
+            trade.setLiquidated(false);
+        } else if (closeReason == CloseReason.LIQUIDATED) {
+            trade.setTpHit(false);
+            trade.setLiquidated(true);
+        } else {
+            trade.setTpHit(false);
+            trade.setLiquidated(false);
+        }
 
-        return tradeRepository.save(trade);
+        // Save the trade first to calculate P&L
+        Trade savedTrade = tradeRepository.save(trade);
+        
+        // Update wallet balance with realized P&L
+        updateWalletBalance(savedTrade);
+        
+        return savedTrade;
+    }
+    
+    // Update the exchange wallet balance when a trade is closed
+    private void updateWalletBalance(Trade trade) {
+        if (trade.getExchange() == null || trade.getExchange().isEmpty()) {
+            return; // No exchange specified, can't update wallet
+        }
+        
+        // Find the wallet for this exchange
+        Optional<ExchangeWallet> walletOpt = walletRepository.findByExchangeNameIgnoreCase(trade.getExchange());
+        if (walletOpt.isEmpty()) {
+            return; // No wallet for this exchange, skip
+        }
+        
+        ExchangeWallet wallet = walletOpt.get();
+        
+        // Calculate the realized P&L for this trade
+        BigDecimal realizedPnL = calculateRealizedPnL(trade);
+        
+        // Add the P&L to wallet balance (P&L can be positive or negative)
+        BigDecimal newBalance = wallet.getTotalBalance().add(realizedPnL);
+        wallet.setTotalBalance(newBalance);
+        
+        walletRepository.save(wallet);
+    }
+    
+    // Calculate realized P&L for a closed trade
+    private BigDecimal calculateRealizedPnL(Trade trade) {
+        if (trade.getEntryPrice() == null || trade.getExitPrice() == null || 
+            trade.getPositionSize() == null || trade.getLeverage() == null) {
+            return BigDecimal.ZERO;
+        }
+        
+        BigDecimal entryPrice = trade.getEntryPrice();
+        BigDecimal exitPrice = trade.getExitPrice();
+        BigDecimal positionSize = trade.getPositionSize();
+        int leverage = trade.getLeverage();
+        
+        // Calculate price change percentage
+        BigDecimal priceChangePercent;
+        if (trade.getTradeType() == TradeType.LONG) {
+            // LONG: profit when price goes up
+            priceChangePercent = exitPrice.subtract(entryPrice)
+                    .divide(entryPrice, 8, RoundingMode.HALF_UP);
+        } else {
+            // SHORT: profit when price goes down
+            priceChangePercent = entryPrice.subtract(exitPrice)
+                    .divide(entryPrice, 8, RoundingMode.HALF_UP);
+        }
+        
+        // Apply leverage and calculate P&L
+        BigDecimal leveragedChange = priceChangePercent.multiply(BigDecimal.valueOf(leverage));
+        BigDecimal pnl = positionSize.multiply(leveragedChange);
+        
+        // Subtract fees if present
+        if (trade.getFees() != null) {
+            pnl = pnl.subtract(trade.getFees());
+        }
+        
+        return pnl.setScale(2, RoundingMode.HALF_UP);
     }
 
     // Get trades by coin

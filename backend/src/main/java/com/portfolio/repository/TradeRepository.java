@@ -27,6 +27,9 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
     // Find trades by exchange
     List<Trade> findByExchangeIgnoreCase(String exchange);
 
+    // Find trades by exchange and status
+    List<Trade> findByExchangeIgnoreCaseAndStatus(String exchange, TradeStatus status);
+
     // Find trades between dates
     List<Trade> findByTradeDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 

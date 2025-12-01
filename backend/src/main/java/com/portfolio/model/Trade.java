@@ -91,6 +91,23 @@ public class Trade {
     @Column(name = "take_profit", precision = 18, scale = 8)
     private BigDecimal takeProfit;
 
+    // Liquidation price (manual entry)
+    @Column(name = "liquidation_price", precision = 18, scale = 8)
+    private BigDecimal liquidationPrice;
+
+    // Checkbox: TP hit
+    @Column(name = "tp_hit", nullable = false)
+    private Boolean tpHit = false;
+
+    // Checkbox: Liquidated
+    @Column(name = "liquidated", nullable = false)
+    private Boolean liquidated = false;
+
+    // How the trade was closed: TP_HIT, LIQUIDATED, MANUAL
+    @Enumerated(EnumType.STRING)
+    @Column(name = "close_reason", length = 20)
+    private CloseReason closeReason;
+
     @NotNull(message = "Trade date is required")
     @Column(name = "trade_date", nullable = false)
     private LocalDateTime tradeDate;

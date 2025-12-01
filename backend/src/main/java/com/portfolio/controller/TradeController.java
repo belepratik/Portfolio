@@ -1,6 +1,7 @@
 package com.portfolio.controller;
 
 import com.portfolio.dto.TradeSummaryDTO;
+import com.portfolio.model.CloseReason;
 import com.portfolio.model.Trade;
 import com.portfolio.model.TradeStatus;
 import com.portfolio.model.TradeType;
@@ -73,11 +74,12 @@ public class TradeController {
     @PatchMapping("/{id}/close")
     public ResponseEntity<Trade> closeTrade(
             @PathVariable Long id,
-            @RequestBody Map<String, BigDecimal> closeData) {
+            @RequestBody Map<String, Object> closeData) {
         try {
-            BigDecimal exitPrice = closeData.get("exitPrice");
-            BigDecimal fees = closeData.getOrDefault("fees", BigDecimal.ZERO);
-            Trade closedTrade = tradeService.closeTrade(id, exitPrice, fees);
+            BigDecimal exitPrice = new BigDecimal(closeData.get("exitPrice").toString());
+            String closeReasonStr = (String) closeData.get("closeReason");
+            CloseReason closeReason = CloseReason.valueOf(closeReasonStr);
+            Trade closedTrade = tradeService.closeTrade(id, exitPrice, closeReason);
             return ResponseEntity.ok(closedTrade);
         } catch (RuntimeException e) {
             return ResponseEntity.notFound().build();
