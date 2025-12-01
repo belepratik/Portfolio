@@ -54,22 +54,24 @@ function Dashboard() {
   // Calculate live portfolio stats
   const calculateLiveStats = () => {
     const openTrades = trades.filter(t => t.status === 'OPEN');
-    let totalInvested = 0;
+    const closedTrades = trades.filter(t => t.status === 'CLOSED');
+    
+    let openInvested = 0;
+    let closedInvested = 0;
     let unrealizedPnL = 0;
-    let currentValue = 0;
+    let openCurrentValue = 0;
 
+    // Calculate open trades
     openTrades.forEach(trade => {
       const positionSize = parseFloat(trade.positionSize) || 0;
       const entryPrice = parseFloat(trade.entryPrice) || 0;
       const leverage = parseInt(trade.leverage) || 1;
       const livePrice = livePrices[trade.coin?.toUpperCase()]?.price || parseFloat(trade.currentPrice) || entryPrice;
 
-      totalInvested += positionSize;
+      openInvested += positionSize;
 
       if (entryPrice > 0) {
         // Calculate P&L based on trade type (same logic as TradeList)
-        // For LONG: profit when price goes up
-        // For SHORT: profit when price goes down
         let priceChangePercent;
         if (trade.tradeType === 'LONG') {
           priceChangePercent = (livePrice - entryPrice) / entryPrice;
@@ -83,31 +85,50 @@ function Dashboard() {
         
         // Current value = position * (1 + leveraged change)
         const tradeCurrentValue = positionSize * (1 + leveragedChange);
-        currentValue += tradeCurrentValue;
+        openCurrentValue += tradeCurrentValue;
         
         // P&L = current value - invested
         const tradePnL = tradeCurrentValue - positionSize;
         unrealizedPnL += tradePnL;
       } else {
-        currentValue += positionSize;
+        openCurrentValue += positionSize;
       }
     });
 
-    // Add closed trades invested amount
-    const closedTrades = trades.filter(t => t.status === 'CLOSED');
+    // Calculate realized P&L from closed trades
+    let realizedPnL = 0;
     closedTrades.forEach(trade => {
-      totalInvested += parseFloat(trade.positionSize) || 0;
+      const positionSize = parseFloat(trade.positionSize) || 0;
+      const entryPrice = parseFloat(trade.entryPrice) || 0;
+      const exitPrice = parseFloat(trade.exitPrice) || entryPrice;
+      const leverage = parseInt(trade.leverage) || 1;
+
+      closedInvested += positionSize;
+
+      if (entryPrice > 0 && exitPrice > 0) {
+        let priceChangePercent;
+        if (trade.tradeType === 'LONG') {
+          priceChangePercent = (exitPrice - entryPrice) / entryPrice;
+        } else {
+          priceChangePercent = (entryPrice - exitPrice) / entryPrice;
+        }
+        const leveragedChange = priceChangePercent * leverage;
+        const tradePnL = positionSize * leveragedChange;
+        realizedPnL += tradePnL;
+      }
     });
 
-    // Add realized P&L from backend to current value
-    const realizedPnL = parseFloat(summary?.realizedPnL) || 0;
-    currentValue += realizedPnL;
+    const totalInvested = openInvested + closedInvested;
+    // Current portfolio = open positions current value + closed positions (invested + P&L)
+    const currentValue = openCurrentValue + closedInvested + realizedPnL;
 
     return {
       totalInvested,
       unrealizedPnL,
       currentValue,
-      realizedPnL
+      realizedPnL,
+      openInvested,
+      closedInvested
     };
   };
 

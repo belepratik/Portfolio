@@ -25,6 +25,10 @@ function EditTrade() {
     notes: '',
     tradeDate: '',
     closeDate: '',
+    takeProfit: '',
+    liquidationPrice: '',
+    tpHit: false,
+    liquidated: false,
   });
 
   useEffect(() => {
@@ -57,6 +61,10 @@ function EditTrade() {
         notes: trade.notes || '',
         tradeDate: trade.tradeDate ? trade.tradeDate.slice(0, 16) : '',
         closeDate: trade.closeDate ? trade.closeDate.slice(0, 16) : '',
+        takeProfit: trade.takeProfit || '',
+        liquidationPrice: trade.liquidationPrice || '',
+        tpHit: trade.tpHit || false,
+        liquidated: trade.liquidated || false,
       });
     } catch (err) {
       setError('Failed to fetch trade details.');
@@ -67,10 +75,10 @@ function EditTrade() {
   };
 
   const handleChange = (e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: type === 'checkbox' ? checked : value,
     }));
   };
 
@@ -101,6 +109,10 @@ function EditTrade() {
         closeDate: formData.status === 'CLOSED' && !formData.closeDate 
           ? new Date().toISOString() 
           : formData.closeDate || null,
+        takeProfit: formData.takeProfit ? parseFloat(formData.takeProfit) : null,
+        liquidationPrice: formData.liquidationPrice ? parseFloat(formData.liquidationPrice) : null,
+        tpHit: formData.tpHit,
+        liquidated: formData.liquidated,
       };
 
       await tradeService.updateTrade(id, tradeData);
@@ -327,6 +339,58 @@ function EditTrade() {
                 onChange={handleChange}
                 required
               />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="takeProfit">Take Profit (USDT)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input
+                  type="number"
+                  id="takeProfit"
+                  name="takeProfit"
+                  value={formData.takeProfit}
+                  onChange={handleChange}
+                  placeholder="TP price"
+                  step="any"
+                  min="0"
+                  style={{ flex: 1 }}
+                />
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    name="tpHit"
+                    checked={formData.tpHit}
+                    onChange={handleChange}
+                  />
+                  <span style={{ fontSize: '0.85rem' }}>TP Hit</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="liquidationPrice">Liquidation Price (USDT)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input
+                  type="number"
+                  id="liquidationPrice"
+                  name="liquidationPrice"
+                  value={formData.liquidationPrice}
+                  onChange={handleChange}
+                  placeholder="Liq. price"
+                  step="any"
+                  min="0"
+                  style={{ flex: 1 }}
+                />
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    name="liquidated"
+                    checked={formData.liquidated}
+                    onChange={handleChange}
+                  />
+                  <span style={{ fontSize: '0.85rem', color: '#ef4444' }}>Liquidated</span>
+                </label>
+              </div>
             </div>
 
             <div className="form-group full-width">
