@@ -24,6 +24,7 @@
   display: flex;
   list-style: none;
   gap: 2rem;
+  align-items: center;
 }
 
 .nav-links a {
@@ -40,12 +41,47 @@
   text-decoration: none;
 }
 
-/* Main Content */
-.main-content {
-  padding: 2rem;
-  max-width: 1400px;
-  margin: 0 auto;
+.user-info {
+  color: var(--text-primary);
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  background-color: var(--bg-tertiary);
+  border-radius: 6px;
 }
+
+.theme-toggle {
+  background: transparent;
+  border: 2px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-toggle:hover {
+  background-color: var(--bg-tertiary);
+  border-color: var(--text-secondary);
+}
+
+.logout-button {
+  background: #dc2626;
+  border: none;
+  color: white;
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.logout-button:hover {
+  background: #b91c1c;
+}
+
+/* Main Content - will be overridden by responsive styles below */
 
 /* Dashboard Styles */
 .dashboard {
@@ -125,7 +161,8 @@
   background-color: var(--bg-secondary);
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  overflow: hidden;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .trades-table {
@@ -362,15 +399,54 @@
   font-size: 0.875rem;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .navbar {
-    flex-direction: column;
+/* Responsive Design */
+
+/* Tablet & Small Desktop (768px - 1024px) */
+@media (max-width: 1024px) {
+  .main-content {
+    padding: 1.5rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 1rem;
   }
 
   .nav-links {
+    gap: 1.5rem;
+  }
+}
+
+/* Mobile & Tablet Portrait (max-width: 768px) */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0.75rem 1rem;
+  }
+
+  .nav-brand h1 {
+    font-size: 1.2rem;
+  }
+
+  .nav-links {
+    gap: 0.75rem;
+    font-size: 0.875rem;
+  }
+
+  .nav-links a {
+    padding: 0.4rem 0.75rem;
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
     gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
   }
 
   .form-grid {
@@ -387,12 +463,284 @@
     align-items: flex-start;
   }
 
-  .trades-table {
-    font-size: 0.875rem;
+  .page-header h2 {
+    font-size: 1.5rem;
   }
 
-  .trades-table th,
-  .trades-table td {
-    padding: 0.75rem 0.5rem;
+  .page-header .header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .page-header .btn {
+    flex: 1;
+    min-width: 150px;
+  }
+
+  /* Hide table, show card view on mobile */
+  .table-container {
+    display: none;
+  }
+
+  .mobile-trade-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Smaller action buttons on mobile */
+  .btn-sm {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  /* Modal adjustments for mobile */
+  .modal-content {
+    width: 95%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+}
+
+/* Desktop view - hide mobile cards, show table */
+@media (min-width: 769px) {
+  .mobile-trade-cards {
+    display: none;
+  }
+
+  .table-container {
+    display: block;
+  }
+}
+
+/* Mobile Trade Card Styles */
+.mobile-trade-card {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mobile-trade-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.mobile-trade-card:active {
+  transform: scale(0.98);
+}
+
+.mobile-trade-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.mobile-trade-card-coin {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.mobile-trade-card-coin h3 {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+.mobile-trade-card-body {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.mobile-trade-card-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.mobile-trade-card-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.mobile-trade-card-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.mobile-trade-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.mobile-trade-card-actions .btn {
+  font-size: 0.8rem;
+  padding: 0.5rem 0.75rem;
+}
+
+.mobile-trade-card-status-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+}
+
+/* Improve page header for mobile */
+@media (max-width: 768px) {
+  .page-header h2 {
+    font-size: 1.75rem;
+    font-weight: 700;
+  }
+}/* Small Mobile (max-width: 480px) */
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .nav-brand h1 {
+    font-size: 1rem;
+  }
+
+  .nav-links {
+    gap: 0.5rem;
+  }
+
+  .nav-links a {
+    padding: 0.3rem 0.5rem;
+    font-size: 0.75rem;
+  }
+
+  .theme-toggle {
+    font-size: 1rem;
+    padding: 0.3rem 0.6rem;
+  }
+
+  .main-content {
+    padding: 0.75rem;
+  }
+
+  .stat-card h3 {
+    font-size: 0.75rem;
+  }
+
+  .stat-card .value {
+    font-size: 1.25rem;
+  }
+
+  .dashboard-header h2 {
+    font-size: 1.5rem;
+  }
+
+  /* Stack filter controls vertically */
+  .filter-bar {
+    overflow-x: hidden;
+  }
+
+  .filter-bar > div {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .filter-bar input,
+  .filter-bar select,
+  .filter-bar button {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  /* Prevent live price ticker from overflowing */
+  .page-header,
+  .page-header .header-actions {
+    overflow-x: hidden;
+    max-width: 100%;
+  }
+}
+
+/* Touch-friendly improvements for all mobile devices */
+@media (hover: none) and (pointer: coarse) {
+  /* Larger tap targets */
+  .btn {
+    min-height: 44px;
+    padding: 0.6rem 1rem;
+  }
+
+  .btn-sm {
+    min-height: 36px;
+  }
+
+  /* Remove hover effects on touch devices */
+  .btn:hover,
+  .nav-links a:hover {
+    transform: none;
+  }
+
+  /* Add active states instead */
+  .btn:active {
+    transform: scale(0.95);
+  }
+}
+
+/* Prevent horizontal scroll on body */
+body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+html {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Ensure all containers respect viewport width but maintain padding */
+.app,
+.main-content,
+.trade-list-page {
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Keep reasonable max-width on desktop */
+.main-content {
+  max-width: 1400px;
+  width: calc(100% - 4rem);
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    width: calc(100% - 2rem);
+    padding: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    width: calc(100% - 1.5rem);
+    padding: 0.75rem;
   }
 }

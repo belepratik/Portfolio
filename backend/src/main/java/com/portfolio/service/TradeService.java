@@ -27,15 +27,19 @@ public class TradeService {
 
     private final TradeRepository tradeRepository;
     private final ExchangeWalletRepository walletRepository;
+    private final UserService userService;
 
     // Create a new trade
     public Trade createTrade(Trade trade) {
+        trade.setUser(userService.getCurrentUser());
         return tradeRepository.save(trade);
     }
 
-    // Get all trades
+    // Get all trades for current user
     @Transactional(readOnly = true)
     public List<Trade> getAllTrades() {
+        // For now, return all trades (will be filtered by user in repository later)
+        // In Phase 2, we'll add: return tradeRepository.findByUserId(userService.getCurrentUserId());
         return tradeRepository.findAll();
     }
 
@@ -93,12 +97,19 @@ public class TradeService {
         // Set the appropriate flags based on close reason
         if (closeReason == CloseReason.TP_HIT) {
             trade.setTpHit(true);
+            trade.setSlHit(false);
+            trade.setLiquidated(false);
+        } else if (closeReason == CloseReason.SL_HIT) {
+            trade.setTpHit(false);
+            trade.setSlHit(true);
             trade.setLiquidated(false);
         } else if (closeReason == CloseReason.LIQUIDATED) {
             trade.setTpHit(false);
+            trade.setSlHit(false);
             trade.setLiquidated(true);
         } else {
             trade.setTpHit(false);
+            trade.setSlHit(false);
             trade.setLiquidated(false);
         }
 

@@ -72,7 +72,7 @@ public class TradeController {
 
     // Close a trade
     @PatchMapping("/{id}/close")
-    public ResponseEntity<Trade> closeTrade(
+    public ResponseEntity<?> closeTrade(
             @PathVariable Long id,
             @RequestBody Map<String, Object> closeData) {
         try {
@@ -81,8 +81,13 @@ public class TradeController {
             CloseReason closeReason = CloseReason.valueOf(closeReasonStr);
             Trade closedTrade = tradeService.closeTrade(id, exitPrice, closeReason);
             return ResponseEntity.ok(closedTrade);
+        } catch (IllegalArgumentException e) {
+            // Invalid enum value
+            return ResponseEntity.badRequest().body("Invalid close reason: " + closeData.get("closeReason"));
         } catch (RuntimeException e) {
-            return ResponseEntity.notFound().build();
+            // Log the actual error
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Error closing trade: " + e.getMessage());
         }
     }
 

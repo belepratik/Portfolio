@@ -1,197 +1,52 @@
-// CoinGecko API service for fetching live crypto prices
-// Free API - no key required (rate limited to ~10-30 calls/min)
+// Binance Public API - No CORS issues, no API key required
+// Using Binance's ticker endpoint which allows cross-origin requests
 
-const COINGECKO_API = 'https://api.coingecko.com/api/v3';
+const BINANCE_API = 'https://api.binance.com/api/v3';
 
-// Map common trading symbols to CoinGecko IDs
-const COIN_ID_MAP = {
-  'BTC': 'bitcoin',
-  'ETH': 'ethereum',
-  'SOL': 'solana',
-  'XRP': 'ripple',
-  'DOGE': 'dogecoin',
-  'ADA': 'cardano',
-  'AVAX': 'avalanche-2',
-  'LINK': 'chainlink',
-  'DOT': 'polkadot',
-  'MATIC': 'matic-network',
-  'SHIB': 'shiba-inu',
-  'LTC': 'litecoin',
-  'UNI': 'uniswap',
-  'ATOM': 'cosmos',
-  'XLM': 'stellar',
-  'ETC': 'ethereum-classic',
-  'FIL': 'filecoin',
-  'APT': 'aptos',
-  'ARB': 'arbitrum',
-  'OP': 'optimism',
-  'INJ': 'injective-protocol',
-  'SUI': 'sui',
-  'SEI': 'sei-network',
-  'TIA': 'celestia',
-  'NEAR': 'near',
-  'FTM': 'fantom',
-  'SAND': 'the-sandbox',
-  'MANA': 'decentraland',
-  'AXS': 'axie-infinity',
-  'AAVE': 'aave',
-  'CRV': 'curve-dao-token',
-  'MKR': 'maker',
-  'SNX': 'havven',
-  'COMP': 'compound-governance-token',
-  'LDO': 'lido-dao',
-  'RPL': 'rocket-pool',
-  'GMX': 'gmx',
-  'DYDX': 'dydx',
-  'PEPE': 'pepe',
-  'WIF': 'dogwifcoin',
-  'BONK': 'bonk',
-  'FLOKI': 'floki',
-  'WLD': 'worldcoin-wld',
-  'BLUR': 'blur',
-  'JTO': 'jito-governance-token',
-  'JUP': 'jupiter-exchange-solana',
-  'ONDO': 'ondo-finance',
-  'ENA': 'ethena',
-  'BNB': 'binancecoin',
-  'TRX': 'tron',
-  'TON': 'the-open-network',
-  'BCH': 'bitcoin-cash',
-  'LEO': 'leo-token',
-  'OKB': 'okb',
-  'KAS': 'kaspa',
-  'RENDER': 'render-token',
-  'TAO': 'bittensor',
-  'VET': 'vechain',
-  'ALGO': 'algorand',
-  'RUNE': 'thorchain',
-  'STX': 'blockstack',
-  'FET': 'fetch-ai',
-  'GRT': 'the-graph',
-  'THETA': 'theta-token',
-  'AR': 'arweave',
-  'FLOW': 'flow',
-  'GALA': 'gala',
-  'NEO': 'neo',
-  'KAVA': 'kava',
-  'XTZ': 'tezos',
-  'EOS': 'eos',
-  'IOTA': 'iota',
-  'XDC': 'xdce-crowd-sale',
-  'EGLD': 'elrond-erd-2',
-  'HNT': 'helium',
-  'CAKE': 'pancakeswap-token',
-  '1INCH': '1inch',
-  'SUSHI': 'sushi',
-  'YFI': 'yearn-finance',
-  'BAL': 'balancer',
-  'ZRX': '0x',
-  'ENS': 'ethereum-name-service',
-  'MASK': 'mask-network',
-  'OCEAN': 'ocean-protocol',
-  'AGIX': 'singularitynet',
-  'RNDR': 'render-token',
-  'IMX': 'immutable-x',
-  'MINA': 'mina-protocol',
-  'CFX': 'conflux-token',
-  'ZIL': 'zilliqa',
-  'QTUM': 'qtum',
-  'WAVES': 'waves',
-  'ICX': 'icon',
-  'ZEC': 'zcash',
-  'DASH': 'dash',
-  'XMR': 'monero',
-};
+// Only the coins we need (trading pairs with USDT)
+const SUPPORTED_COINS = ['BTC', 'ETH', 'SOL', 'BNB'];
 
-// Cache for prices (to avoid too many API calls)
+// Cache for prices
 let priceCache = {};
 let lastFetchTime = 0;
 const CACHE_DURATION = 30000; // 30 seconds
 
 export const priceService = {
-  // Get CoinGecko ID from symbol
-  getCoinId: (symbol) => {
-    const upperSymbol = symbol.toUpperCase();
-    return COIN_ID_MAP[upperSymbol] || upperSymbol.toLowerCase();
-  },
-
-  // Fetch price for a single coin
-  getPrice: async (symbol) => {
-    const coinId = priceService.getCoinId(symbol);
-    
-    // Check cache first
+  // Fetch prices for all supported coins
+  getPrices: async (symbols = SUPPORTED_COINS) => {
     const now = Date.now();
-    if (priceCache[coinId] && (now - lastFetchTime) < CACHE_DURATION) {
-      return priceCache[coinId];
-    }
-
-    try {
-      const response = await fetch(
-        `${COINGECKO_API}/simple/price?ids=${coinId}&vs_currencies=usd&include_24hr_change=true`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch price');
-      }
-
-      const data = await response.json();
-      
-      if (data[coinId]) {
-        const priceData = {
-          price: data[coinId].usd,
-          change24h: data[coinId].usd_24h_change,
-        };
-        priceCache[coinId] = priceData;
-        lastFetchTime = now;
-        return priceData;
-      }
-      
-      return null;
-    } catch (error) {
-      console.error(`Error fetching price for ${symbol}:`, error);
-      return null;
-    }
-  },
-
-  // Fetch prices for multiple coins at once
-  getPrices: async (symbols) => {
-    if (!symbols || symbols.length === 0) return {};
-
-    const coinIds = [...new Set(symbols.map(s => priceService.getCoinId(s)))];
     
     // Check cache
-    const now = Date.now();
-    if ((now - lastFetchTime) < CACHE_DURATION && coinIds.every(id => priceCache[id])) {
+    if ((now - lastFetchTime) < CACHE_DURATION && Object.keys(priceCache).length > 0) {
       const result = {};
-      symbols.forEach(symbol => {
-        const coinId = priceService.getCoinId(symbol);
-        result[symbol.toUpperCase()] = priceCache[coinId];
+      symbols.forEach(s => {
+        const upper = s?.toUpperCase();
+        if (priceCache[upper]) result[upper] = priceCache[upper];
       });
-      return result;
+      if (Object.keys(result).length > 0) return result;
     }
 
     try {
-      const response = await fetch(
-        `${COINGECKO_API}/simple/price?ids=${coinIds.join(',')}&vs_currencies=usd&include_24hr_change=true`
-      );
+      // Fetch 24hr ticker for all symbols - single API call
+      const response = await fetch(`${BINANCE_API}/ticker/24hr`);
       
-      if (!response.ok) {
-        throw new Error('Failed to fetch prices');
-      }
+      if (!response.ok) throw new Error('Failed to fetch prices');
 
       const data = await response.json();
-      
-      // Update cache and build result
       const result = {};
-      symbols.forEach(symbol => {
-        const coinId = priceService.getCoinId(symbol);
-        if (data[coinId]) {
+      
+      // Filter for USDT pairs of our supported coins
+      const targetPairs = symbols.map(s => `${s?.toUpperCase()}USDT`);
+      
+      data.forEach(ticker => {
+        if (targetPairs.includes(ticker.symbol)) {
+          const coin = ticker.symbol.replace('USDT', '');
           const priceData = {
-            price: data[coinId].usd,
-            change24h: data[coinId].usd_24h_change,
+            price: parseFloat(ticker.lastPrice),
+            change24h: parseFloat(ticker.priceChangePercent),
           };
-          priceCache[coinId] = priceData;
-          result[symbol.toUpperCase()] = priceData;
+          priceCache[coin] = priceData;
+          result[coin] = priceData;
         }
       });
       
@@ -203,14 +58,43 @@ export const priceService = {
     }
   },
 
-  // Clear cache (useful for manual refresh)
+  // Fetch single coin price
+  getPrice: async (symbol) => {
+    const upper = symbol?.toUpperCase();
+    
+    // Check cache first
+    const now = Date.now();
+    if (priceCache[upper] && (now - lastFetchTime) < CACHE_DURATION) {
+      return priceCache[upper];
+    }
+    
+    try {
+      const response = await fetch(`${BINANCE_API}/ticker/24hr?symbol=${upper}USDT`);
+      
+      if (!response.ok) return null;
+
+      const ticker = await response.json();
+      const priceData = {
+        price: parseFloat(ticker.lastPrice),
+        change24h: parseFloat(ticker.priceChangePercent),
+      };
+      priceCache[upper] = priceData;
+      lastFetchTime = now;
+      return priceData;
+    } catch (error) {
+      console.error(`Error fetching price for ${symbol}:`, error);
+      return null;
+    }
+  },
+
+  // Clear cache
   clearCache: () => {
     priceCache = {};
     lastFetchTime = 0;
   },
 
-  // Get list of supported coins
-  getSupportedCoins: () => Object.keys(COIN_ID_MAP),
+  // Get supported coins
+  getSupportedCoins: () => SUPPORTED_COINS,
 };
 
 export default priceService;

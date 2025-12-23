@@ -4,11 +4,14 @@ backend/*.log
 backend/.mvn/
 backend/mvnw
 backend/mvnw.cmd
+backend/src/main/resources/application-local.properties
 
 # Frontend
 frontend/node_modules/
 frontend/dist/
 frontend/.vite/
+frontend/.env.local
+frontend/.env.*.local
 
 # IDE
 .idea/
@@ -29,3 +32,27 @@ Thumbs.db
 # Logs
 *.log
 npm-debug.log*
+hs_err_pid*.log
+replay_pid*.log
+
+# Database
+*.sql
+*.db
+*.sqlite
+
+# Build artifacts
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Docker
+docker-compose.override.yml
+
+# Project specific
+ngrok.yml
+DEPLOYMENT_PLAN.txt
+DOCKER_DEPLOYMENT_COMPLETE.md
+DOCKER_README.md

@@ -23,8 +23,10 @@ function AddTrade() {
     notes: '',
     tradeDate: new Date().toISOString().slice(0, 16),
     takeProfit: '',
+    stopLoss: '',
     liquidationPrice: '',
     tpHit: false,
+    slHit: false,
     liquidated: false,
   });
 
@@ -88,8 +90,10 @@ function AddTrade() {
         tradeDate: formData.tradeDate,
         closeDate: formData.status === 'CLOSED' ? new Date().toISOString() : null,
         takeProfit: formData.takeProfit ? parseFloat(formData.takeProfit) : null,
+        stopLoss: formData.stopLoss ? parseFloat(formData.stopLoss) : null,
         liquidationPrice: formData.liquidationPrice ? parseFloat(formData.liquidationPrice) : null,
         tpHit: formData.tpHit,
+        slHit: formData.slHit,
         liquidated: formData.liquidated,
       };
 
@@ -310,6 +314,32 @@ function AddTrade() {
                     onChange={handleChange}
                   />
                   <span style={{ fontSize: '0.85rem' }}>TP Hit</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="stopLoss">Stop Loss (USDT)</label>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <input
+                  type="number"
+                  id="stopLoss"
+                  name="stopLoss"
+                  value={formData.stopLoss}
+                  onChange={handleChange}
+                  placeholder="SL price"
+                  step="any"
+                  min="0"
+                  style={{ flex: 1 }}
+                />
+                <label style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    name="slHit"
+                    checked={formData.slHit}
+                    onChange={handleChange}
+                  />
+                  <span style={{ fontSize: '0.85rem', color: '#f59e0b' }}>SL Hit</span>
                 </label>
               </div>
             </div>

@@ -22,6 +22,11 @@ public class Trade {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnore
+    private User user;
+
     // Cascade delete investments when trade is deleted
     @OneToMany(mappedBy = "trade", cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
@@ -98,6 +103,10 @@ public class Trade {
     // Checkbox: TP hit
     @Column(name = "tp_hit", nullable = false)
     private Boolean tpHit = false;
+
+    // Checkbox: SL hit
+    @Column(name = "sl_hit", nullable = false)
+    private Boolean slHit = false;
 
     // Checkbox: Liquidated
     @Column(name = "liquidated", nullable = false)

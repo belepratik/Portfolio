@@ -109,6 +109,8 @@ function TradeList() {
     
     if (reason === 'TP_HIT' && closingTrade.takeProfit) {
       setExitPrice(closingTrade.takeProfit);
+    } else if (reason === 'SL_HIT' && closingTrade.stopLoss) {
+      setExitPrice(closingTrade.stopLoss);
     } else if (reason === 'LIQUIDATED' && closingTrade.liquidationPrice) {
       setExitPrice(closingTrade.liquidationPrice);
     } else {
@@ -201,6 +203,7 @@ function TradeList() {
   const getCloseReasonText = (reason) => {
     switch (reason) {
       case 'TP_HIT': return '🎯 TP';
+      case 'SL_HIT': return '🛑 SL';
       case 'LIQUIDATED': return '💀 Liq';
       case 'MANUAL': return '✋';
       default: return '';
@@ -225,9 +228,18 @@ function TradeList() {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
       month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const formatDateTime = (dateString) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit',
+      minute: '2-digit'
     });
   };
 
@@ -396,9 +408,9 @@ function TradeList() {
                 width: '100%', 
                 padding: '0.5rem 1rem',
                 borderRadius: '4px',
-                border: '1px solid #444',
-                background: '#2a2a2a',
-                color: '#fff'
+                border: '1px solid var(--border-color)',
+                background: 'var(--bg-secondary)',
+                color: 'var(--text-primary)'
               }}
             />
           </div>
@@ -407,7 +419,7 @@ function TradeList() {
           <select 
             value={filterStatus} 
             onChange={(e) => setFilterStatus(e.target.value)}
-            style={{ padding: '0.5rem', borderRadius: '4px', background: '#2a2a2a', color: '#fff', border: '1px solid #444' }}
+            style={{ padding: '0.5rem', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
           >
             <option value="">All Status</option>
             <option value="OPEN">Open</option>
@@ -417,7 +429,7 @@ function TradeList() {
           <select 
             value={filterType} 
             onChange={(e) => setFilterType(e.target.value)}
-            style={{ padding: '0.5rem', borderRadius: '4px', background: '#2a2a2a', color: '#fff', border: '1px solid #444' }}
+            style={{ padding: '0.5rem', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
           >
             <option value="">All Types</option>
             <option value="LONG">Long</option>
@@ -458,14 +470,14 @@ function TradeList() {
             gap: '0.75rem', 
             marginTop: '1rem',
             paddingTop: '1rem',
-            borderTop: '1px solid #444'
+            borderTop: '1px solid var(--border-color)'
           }}>
             <div>
-              <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '0.25rem' }}>Coin</label>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>Coin</label>
               <select 
                 value={filterCoin} 
                 onChange={(e) => setFilterCoin(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: '#2a2a2a', color: '#fff', border: '1px solid #444' }}
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
               >
                 <option value="">All Coins</option>
                 {uniqueCoins.map(coin => (
@@ -475,11 +487,11 @@ function TradeList() {
             </div>
             
             <div>
-              <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '0.25rem' }}>Exchange</label>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>Exchange</label>
               <select 
                 value={filterExchange} 
                 onChange={(e) => setFilterExchange(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: '#2a2a2a', color: '#fff', border: '1px solid #444' }}
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
               >
                 <option value="">All Exchanges</option>
                 {uniqueExchanges.map(exchange => (
@@ -489,22 +501,22 @@ function TradeList() {
             </div>
             
             <div>
-              <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '0.25rem' }}>From Date</label>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>From Date</label>
               <input
                 type="date"
                 value={filterDateFrom}
                 onChange={(e) => setFilterDateFrom(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: '#2a2a2a', color: '#fff', border: '1px solid #444' }}
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
               />
             </div>
             
             <div>
-              <label style={{ fontSize: '0.75rem', color: '#888', display: 'block', marginBottom: '0.25rem' }}>To Date</label>
+              <label style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', display: 'block', marginBottom: '0.25rem' }}>To Date</label>
               <input
                 type="date"
                 value={filterDateTo}
                 onChange={(e) => setFilterDateTo(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: '#2a2a2a', color: '#fff', border: '1px solid #444' }}
+                style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--bg-secondary)', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
               />
             </div>
           </div>
@@ -523,7 +535,7 @@ function TradeList() {
         flexWrap: 'wrap'
       }}>
         <span style={{ color: '#888', fontSize: '0.85rem', fontWeight: '500' }}>Live Prices:</span>
-        {['BTC', 'ETH', 'SOL'].map(coin => {
+        {['BTC', 'ETH', 'SOL', 'BNB'].map(coin => {
           const price = livePrices[coin]?.price;
           const change = livePrices[coin]?.change24h;
           return (
@@ -532,12 +544,12 @@ function TradeList() {
               alignItems: 'center', 
               gap: '0.5rem',
               padding: '0.4rem 0.75rem',
-              background: '#1a1a2e',
+              background: 'var(--bg-tertiary)',
               borderRadius: '6px',
-              border: '1px solid #333'
+              border: '1px solid var(--border-color)'
             }}>
-              <span style={{ fontWeight: '600', color: '#fff' }}>{coin}</span>
-              <span style={{ color: '#4ade80', fontWeight: '500' }}>
+              <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{coin}</span>
+              <span style={{ color: 'var(--accent-green)', fontWeight: '500' }}>
                 {price ? `$${price.toLocaleString('en-US', { maximumFractionDigits: price > 100 ? 0 : 2 })}` : '...'}
               </span>
               {change !== null && change !== undefined && (
@@ -577,9 +589,88 @@ function TradeList() {
           </button>
         </div>
       ) : (
-        <div className="table-container" style={{ overflowX: 'auto' }}>
-          <table className="trades-table" style={{ minWidth: '1100px' }}>
-            <thead>
+        <>
+          {/* Mobile Card View */}
+          <div className="mobile-trade-cards">
+            {sortedTrades.map((trade) => {
+              const livePrice = getLivePrice(trade.coin);
+              const displayPrice = trade.status === 'CLOSED' ? trade.exitPrice : (livePrice || trade.currentPrice);
+              const currentValue = calculateCurrentValue(trade, displayPrice);
+              const pnl = currentValue ? currentValue - trade.positionSize : null;
+              
+              return (
+                <div key={trade.id} className="mobile-trade-card" onClick={() => window.location.href = `/trade/${trade.id}`}>
+                  <div className="mobile-trade-card-header">
+                    <div className="mobile-trade-card-coin">
+                      <h3>{trade.coin}</h3>
+                      <span className={`badge ${trade.tradeType?.toLowerCase()}`}>
+                        {trade.tradeType}
+                      </span>
+                    </div>
+                    <span className={`badge ${trade.status?.toLowerCase()}`}>
+                      {trade.status}
+                    </span>
+                  </div>
+
+                  <div className="mobile-trade-card-body">
+                    <div className="mobile-trade-card-item">
+                      <span className="mobile-trade-card-label">Entry</span>
+                      <span className="mobile-trade-card-value">${formatPrice(trade.entryPrice)}</span>
+                    </div>
+                    <div className="mobile-trade-card-item">
+                      <span className="mobile-trade-card-label">Size</span>
+                      <span className="mobile-trade-card-value">${trade.positionSize}</span>
+                    </div>
+                    <div className="mobile-trade-card-item">
+                      <span className="mobile-trade-card-label">Leverage</span>
+                      <span className="mobile-trade-card-value">{trade.leverage}x</span>
+                    </div>
+                    <div className="mobile-trade-card-item">
+                      <span className="mobile-trade-card-label">P&L</span>
+                      <span className={`mobile-trade-card-value ${pnl > 0 ? 'profit' : pnl < 0 ? 'loss' : ''}`}>
+                        {pnl !== null ? formatCurrency(pnl) : '-'}
+                      </span>
+                    </div>
+                    <div className="mobile-trade-card-item">
+                      <span className="mobile-trade-card-label">Exchange</span>
+                      <span className="mobile-trade-card-value" style={{ fontSize: '0.85rem' }}>{trade.exchange || '-'}</span>
+                    </div>
+                    <div className="mobile-trade-card-item">
+                      <span className="mobile-trade-card-label">Date</span>
+                      <span className="mobile-trade-card-value" style={{ fontSize: '0.8rem' }}>{formatDate(trade.tradeDate)}</span>
+                    </div>
+                  </div>
+
+                  <div className="mobile-trade-card-actions" onClick={(e) => e.stopPropagation()}>
+                    {trade.status === 'OPEN' && (
+                      <button
+                        onClick={() => openCloseModal(trade)}
+                        className="btn btn-sm"
+                        style={{ flex: 1, background: '#f59e0b', color: '#000', fontWeight: '600' }}
+                      >
+                        Close
+                      </button>
+                    )}
+                    <Link to={`/edit-trade/${trade.id}`} className="btn btn-secondary btn-sm" style={{ flex: 1 }}>
+                      Edit
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(trade.id)}
+                      className="btn btn-danger btn-sm"
+                      style={{ flex: 1 }}
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="table-container" style={{ overflowX: 'auto' }}>
+            <table className="trades-table" style={{ minWidth: '1100px' }}>
+              <thead>
               <tr>
                 <th onClick={() => handleSort('date')} style={{ cursor: 'pointer', userSelect: 'none' }}>
                   Date{getSortIndicator('date')}
@@ -598,6 +689,7 @@ function TradeList() {
                   Entry{getSortIndicator('entry')}
                 </th>
                 <th>TP</th>
+                <th>SL</th>
                 <th>Liq</th>
                 <th onClick={() => handleSort('size')} style={{ cursor: 'pointer', userSelect: 'none' }}>
                   Size{getSortIndicator('size')}
@@ -618,7 +710,7 @@ function TradeList() {
                 
                 return (
                   <tr key={trade.id}>
-                    <td style={{ whiteSpace: 'nowrap', fontSize: '0.8rem' }}>{formatDate(trade.tradeDate)}</td>
+                    <td style={{ whiteSpace: 'nowrap', fontSize: '0.8rem', cursor: 'help' }} title={formatDateTime(trade.tradeDate)}>{formatDate(trade.tradeDate)}</td>
                     <td><strong>{trade.coin}</strong></td>
                     <td>
                       <span className={`badge ${trade.tradeType?.toLowerCase()}`}>
@@ -631,6 +723,10 @@ function TradeList() {
                     <td className={trade.tpHit ? 'profit' : ''} style={{ whiteSpace: 'nowrap' }}>
                       {trade.takeProfit ? formatPrice(trade.takeProfit) : '-'}
                       {trade.tpHit && <span style={{ marginLeft: '0.25rem' }}>✓</span>}
+                    </td>
+                    <td className={trade.slHit ? 'loss' : ''} style={{ whiteSpace: 'nowrap' }}>
+                      {trade.stopLoss ? formatPrice(trade.stopLoss) : '-'}
+                      {trade.slHit && <span style={{ marginLeft: '0.25rem' }}>✗</span>}
                     </td>
                     <td className={trade.liquidated ? 'loss' : ''} style={{ whiteSpace: 'nowrap' }}>
                       {trade.liquidationPrice ? formatPrice(trade.liquidationPrice) : '-'}
@@ -685,8 +781,8 @@ function TradeList() {
                                 position: 'absolute',
                                 bottom: '100%',
                                 right: 0,
-                                background: '#1e1e2e',
-                                border: '1px solid #444',
+                                background: 'var(--bg-secondary)',
+                                border: '1px solid var(--border-color)',
                                 borderRadius: '8px',
                                 padding: '0.75rem',
                                 marginBottom: '0.5rem',
@@ -695,7 +791,7 @@ function TradeList() {
                                 boxShadow: '0 4px 12px rgba(0,0,0,0.5)',
                                 whiteSpace: 'nowrap'
                               }}>
-                                <div style={{ fontSize: '0.75rem', color: '#888', marginBottom: '0.25rem' }}>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>
                                   If still open @ ${formatPrice(getLivePrice(trade.coin))}
                                 </div>
                                 <div style={{ 
@@ -705,7 +801,7 @@ function TradeList() {
                                 }}>
                                   {calculateWhatIfPnL(trade) >= 0 ? '+' : ''}{formatCurrency(calculateWhatIfPnL(trade))}
                                 </div>
-                                <div style={{ fontSize: '0.7rem', color: '#888', marginTop: '0.25rem' }}>
+                                <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
                                   vs closed: {formatCurrency(pnl)} ({calculateWhatIfPnL(trade) > pnl ? '📈 missed' : '✅ good exit'})
                                 </div>
                                 <div style={{ 
@@ -739,7 +835,8 @@ function TradeList() {
               })}
             </tbody>
           </table>
-        </div>
+          </div>
+        </>
       )}
 
       {/* Close Trade Modal */}
@@ -800,6 +897,12 @@ function TradeList() {
                   <span style={{ color: '#4ade80' }}>${formatPrice(closingTrade.takeProfit)}</span>
                 </div>
               )}
+              {closingTrade.stopLoss && (
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                  <span style={{ color: '#888' }}>Stop Loss:</span>
+                  <span style={{ color: '#f59e0b' }}>${formatPrice(closingTrade.stopLoss)}</span>
+                </div>
+              )}
               {closingTrade.liquidationPrice && (
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ color: '#888' }}>Liquidation:</span>
@@ -813,13 +916,13 @@ function TradeList() {
               <label style={{ display: 'block', marginBottom: '0.5rem', color: '#888', fontSize: '0.85rem' }}>
                 Close Reason:
               </label>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 <button
                   type="button"
                   onClick={() => handleCloseReasonChange('TP_HIT')}
                   disabled={!closingTrade.takeProfit}
                   style={{
-                    flex: 1,
+                    flex: '1 1 45%',
                     padding: '0.75rem',
                     borderRadius: '8px',
                     border: closeReason === 'TP_HIT' ? '2px solid #4ade80' : '1px solid #444',
@@ -833,10 +936,27 @@ function TradeList() {
                 </button>
                 <button
                   type="button"
+                  onClick={() => handleCloseReasonChange('SL_HIT')}
+                  disabled={!closingTrade.stopLoss}
+                  style={{
+                    flex: '1 1 45%',
+                    padding: '0.75rem',
+                    borderRadius: '8px',
+                    border: closeReason === 'SL_HIT' ? '2px solid #f59e0b' : '1px solid #444',
+                    background: closeReason === 'SL_HIT' ? 'rgba(245, 158, 11, 0.1)' : '#2a2a2a',
+                    color: !closingTrade.stopLoss ? '#666' : closeReason === 'SL_HIT' ? '#f59e0b' : '#fff',
+                    cursor: closingTrade.stopLoss ? 'pointer' : 'not-allowed',
+                    opacity: closingTrade.stopLoss ? 1 : 0.5
+                  }}
+                >
+                  🛑 SL Hit
+                </button>
+                <button
+                  type="button"
                   onClick={() => handleCloseReasonChange('LIQUIDATED')}
                   disabled={!closingTrade.liquidationPrice}
                   style={{
-                    flex: 1,
+                    flex: '1 1 45%',
                     padding: '0.75rem',
                     borderRadius: '8px',
                     border: closeReason === 'LIQUIDATED' ? '2px solid #f87171' : '1px solid #444',
@@ -852,7 +972,7 @@ function TradeList() {
                   type="button"
                   onClick={() => handleCloseReasonChange('MANUAL')}
                   style={{
-                    flex: 1,
+                    flex: '1 1 45%',
                     padding: '0.75rem',
                     borderRadius: '8px',
                     border: closeReason === 'MANUAL' ? '2px solid #60a5fa' : '1px solid #444',
@@ -880,15 +1000,15 @@ function TradeList() {
                   width: '100%',
                   padding: '0.75rem',
                   borderRadius: '8px',
-                  border: '1px solid #444',
-                  background: '#2a2a2a',
-                  color: '#fff',
+                  border: '1px solid var(--border-color)',
+                  background: 'var(--bg-secondary)',
+                  color: 'var(--text-primary)',
                   fontSize: '1.1rem'
                 }}
                 placeholder="Enter exit price..."
               />
               {getLivePrice(closingTrade.coin) && (
-                <div style={{ fontSize: '0.75rem', color: '#888', marginTop: '0.25rem' }}>
+                <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginTop: '0.25rem' }}>
                   Live price: ${formatPrice(getLivePrice(closingTrade.coin))}
                 </div>
               )}

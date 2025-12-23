@@ -189,7 +189,7 @@ function Dashboard() {
 
       {/* Portfolio Overview - Main Stats */}
       <div className="stats-grid" style={{ marginBottom: '1rem' }}>
-        <div className="stat-card" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', border: '2px solid #4ade80' }}>
+        <div className="stat-card" style={{ background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)', border: '2px solid #4ade80' }}>
           <h3>💰 Total Invested</h3>
           <div className="value neutral" style={{ fontSize: '1.8rem' }}>
             {formatCurrency(liveStats?.totalInvested ?? summary?.totalInvested)}
@@ -197,7 +197,7 @@ function Dashboard() {
           <small style={{ color: '#888' }}>All positions (open + closed)</small>
         </div>
 
-        <div className="stat-card" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', border: '2px solid #60a5fa' }}>
+        <div className="stat-card" style={{ background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)', border: '2px solid #60a5fa' }}>
           <h3>📊 Current Portfolio Value</h3>
           <div className={`value ${getValueClass((liveStats?.currentValue ?? parseFloat(summary?.currentPortfolioValue)) - (liveStats?.totalInvested ?? parseFloat(summary?.totalInvested)))}`} style={{ fontSize: '1.8rem' }}>
             {formatCurrency(liveStats?.currentValue ?? summary?.currentPortfolioValue)}
@@ -205,7 +205,7 @@ function Dashboard() {
           <small style={{ color: '#888' }}>Open positions + realized gains</small>
         </div>
 
-        <div className="stat-card" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', border: '2px solid #f472b6' }}>
+        <div className="stat-card" style={{ background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)', border: '2px solid #f472b6' }}>
           <h3>📈 Unrealized P&L</h3>
           <div className={`value ${getValueClass(liveStats?.unrealizedPnL ?? summary?.unrealizedPnL)}`} style={{ fontSize: '1.8rem' }}>
             {formatCurrency(liveStats?.unrealizedPnL ?? summary?.unrealizedPnL)}
@@ -213,7 +213,7 @@ function Dashboard() {
           <small style={{ color: '#888' }}>Open trades P&L (Live)</small>
         </div>
 
-        <div className="stat-card" style={{ background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)', border: '2px solid #fbbf24' }}>
+        <div className="stat-card" style={{ background: 'linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)', border: '2px solid #fbbf24' }}>
           <h3>✅ Realized P&L</h3>
           <div className={`value ${getValueClass(liveStats?.realizedPnL ?? summary?.realizedPnL)}`} style={{ fontSize: '1.8rem' }}>
             {formatCurrency(liveStats?.realizedPnL ?? summary?.realizedPnL)}
@@ -223,7 +223,7 @@ function Dashboard() {
       </div>
 
       {/* P&L Breakdown */}
-      <h3 style={{ marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>📅 P&L Breakdown</h3>
+      <h3 style={{ marginTop: '2rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>📅 P&L Breakdown</h3>
       <div className="stats-grid">
         <div className="stat-card">
           <h3>Total P&L</h3>
@@ -255,7 +255,7 @@ function Dashboard() {
       </div>
 
       {/* Trade Statistics */}
-      <h3 style={{ marginTop: '2rem', marginBottom: '1rem', color: '#fff' }}>📊 Trade Statistics</h3>
+      <h3 style={{ marginTop: '2rem', marginBottom: '1rem', color: 'var(--text-primary)' }}>📊 Trade Statistics</h3>
       <div className="stats-grid">
         <div className="stat-card">
           <h3>Win Rate</h3>

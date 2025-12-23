@@ -123,6 +123,8 @@ function TradeDetail() {
       // Auto-fill price based on reason
       if (reason === 'TP_HIT' && trade?.takeProfit) {
         newPrice = trade.takeProfit;
+      } else if (reason === 'SL_HIT' && trade?.stopLoss) {
+        newPrice = trade.stopLoss;
       } else if (reason === 'LIQUIDATED' && trade?.liquidationPrice) {
         newPrice = trade.liquidationPrice;
       } else if (reason === 'MANUAL' && livePrice) {
@@ -156,6 +158,7 @@ function TradeDetail() {
   const getCloseReasonText = (reason) => {
     switch (reason) {
       case 'TP_HIT': return '🎯 TP Hit';
+      case 'SL_HIT': return '🛑 SL Hit';
       case 'LIQUIDATED': return '💀 Liquidated';
       case 'MANUAL': return '✋ Manual Close';
       default: return reason || '-';
@@ -291,7 +294,7 @@ function TradeDetail() {
         </div>
       </div>
 
-      {/* Trade Summary - Row 2: P&L, Leverage, TP, Liquidation */}
+      {/* Trade Summary - Row 2: P&L, Leverage, TP, SL, Liquidation */}
       <div className="stats-grid" style={{ marginBottom: '2rem' }}>
         <div className="stat-card">
           <h3>Total P&L</h3>
@@ -310,6 +313,12 @@ function TradeDetail() {
           <h3>Take Profit {trade.tpHit && <span style={{ color: '#4ade80' }}>✓</span>}</h3>
           <div className={`value ${trade.tpHit ? 'positive' : 'neutral'}`}>
             {trade.takeProfit ? formatCurrency(trade.takeProfit) : '-'}
+          </div>
+        </div>
+        <div className="stat-card">
+          <h3>Stop Loss {trade.slHit && <span style={{ color: '#f59e0b' }}>✗</span>}</h3>
+          <div className={`value ${trade.slHit ? 'negative' : 'neutral'}`}>
+            {trade.stopLoss ? formatCurrency(trade.stopLoss) : '-'}
           </div>
         </div>
         <div className="stat-card">
@@ -361,6 +370,15 @@ function TradeDetail() {
                     style={{ flex: 1 }}
                   >
                     🎯 TP Hit
+                  </button>
+                  <button
+                    type="button"
+                    className={`btn ${closeData.closeReason === 'SL_HIT' ? 'btn-warning' : 'btn-secondary'}`}
+                    onClick={() => handleCloseReasonChange('SL_HIT')}
+                    disabled={!trade.stopLoss}
+                    style={{ flex: 1, background: closeData.closeReason === 'SL_HIT' ? '#f59e0b' : undefined }}
+                  >
+                    🛑 SL Hit
                   </button>
                   <button
                     type="button"
