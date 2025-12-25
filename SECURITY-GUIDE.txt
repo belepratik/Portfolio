@@ -1,0 +1,85 @@
+SECURITY GUIDE - DEVELOPMENT vs PRODUCTION
+==========================================
+
+🔒 THE SECURITY APPROACH
+========================
+
+Your current setup is SECURE because:
+
+✅ DEVELOPMENT (Docker): Uses safe default passwords
+✅ PRODUCTION (AWS): Uses environment variables (NO hardcoded secrets)
+
+## 📋 HOW IT WORKS:
+
+### 🏠 LOCAL DEVELOPMENT (Safe to commit):
+```properties
+# application.properties - SAFE for Git
+spring.datasource.password=${DB_PASSWORD:rootpassword}
+```
+- Uses Docker container with "rootpassword" (default)
+- Only accessible from your local machine
+- Safe to commit to Git because it's just for development
+
+### 🌐 AWS PRODUCTION (Environment variables):
+```bash
+# EC2 Environment Variables - NOT in Git
+Environment=DB_PASSWORD=your-real-secure-password
+```
+- Real passwords set as environment variables on EC2
+- Never committed to Git
+- Only accessible from your AWS infrastructure
+
+## 🛠️ WORKFLOW:
+
+### 1. Development (Your Local Machine):
+```bash
+git clone https://github.com/belepratik/Portfolio.git
+cd Portfolio
+docker-compose up -d
+# Uses safe Docker passwords automatically
+```
+
+### 2. Production (AWS Deployment):
+```bash
+# On EC2, set real environment variables
+export DB_PASSWORD="YourRealSecurePassword123!"
+java -jar -Dspring.profiles.active=prod portfolio-app.jar
+# Uses production secrets, not Docker defaults
+```
+
+## 🎯 SECURITY LAYERS:
+
+### ✅ What's Safe in Git:
+- Docker development passwords (rootpassword, portfolio_pass)
+- Default configuration values
+- Development environment setup
+
+### ❌ What's NEVER in Git:
+- Production database passwords
+- AWS access keys
+- Real user credentials
+- Production environment variables
+
+## 🔄 BOTH APPROACHES WORK:
+
+### Option 1: Clone and Run Locally
+```bash
+git clone repo → docker-compose up -d
+# Uses safe development defaults
+```
+
+### Option 2: Deploy to AWS
+```bash
+git clone repo → build JAR → deploy to EC2 with real secrets
+# Uses production environment variables
+```
+
+## 🛡️ SECURITY BEST PRACTICES FOLLOWED:
+
+1. ✅ Separation of development and production configs
+2. ✅ Environment variables for sensitive production data  
+3. ✅ Safe defaults for development
+4. ✅ No production secrets in Git
+5. ✅ Docker isolation for local development
+
+YOUR SETUP IS SECURE! 🔒

@@ -66,7 +66,7 @@ sudo amazon-linux-extras install java-openjdk17 -y
 # Upload your JAR file
 scp -i your-key.pem backend/target/*.jar ec2-user@your-ec2-ip:~/
 
-# Create systemd service
+# Create systemd service with SECURE environment variables
 sudo nano /etc/systemd/system/portfolio.service
 
 [Unit]
@@ -76,15 +76,25 @@ After=network.target
 [Service]
 User=ec2-user
 WorkingDirectory=/home/ec2-user
-ExecStart=/usr/bin/java -jar portfolio-app.jar
+ExecStart=/usr/bin/java -jar -Dspring.profiles.active=prod portfolio-app.jar
 Restart=always
-Environment=DB_HOST=your-rds-endpoint
+
+# 🔐 SECURE: Environment variables (NOT hardcoded passwords)
+Environment=DB_HOST=your-rds-endpoint.rds.amazonaws.com
+Environment=DB_PORT=3306
+Environment=DB_NAME=portfolio_db
 Environment=DB_USERNAME=admin
-Environment=DB_PASSWORD=your-password
+Environment=DB_PASSWORD=your-secure-password
 Environment=SERVER_PORT=8080
+Environment=CORS_ORIGINS=http://your-s3-bucket.s3-website-us-east-1.amazonaws.com
+Environment=AWS_REGION=us-east-1
 
 [Install]
 WantedBy=multi-user.target
+
+# 🔐 EVEN MORE SECURE: Use AWS Systems Manager Parameter Store
+# Instead of Environment=DB_PASSWORD=password, your app can fetch from:
+# aws ssm get-parameter --name "/portfolio/db/password" --with-decryption
 
 # Start service
 sudo systemctl daemon-reload
@@ -174,12 +184,39 @@ CDN: https://your-cloudfront-domain.cloudfront.net
 - S3 + CloudFront: ~$1-3/month
 - **Total: ~$25-27/month**
 
-🔒 SECURITY BEST PRACTICES
-==========================
-1. Restrict RDS security group to only EC2
-2. Use IAM roles instead of access keys
-3. Enable CloudTrail for monitoring
-4. Regular security updates on EC2
+🔒 SECURITY BEST PRACTICES (CRITICAL)
+====================================
+❌ NEVER store passwords in application.properties
+❌ NEVER commit secrets to Git
+❌ NEVER hardcode credentials in code
+
+✅ USE Environment Variables on EC2:
+   - Store secrets in systemd service file
+   - File permissions: 600 (owner read-write only)
+   - sudo chmod 600 /etc/systemd/system/portfolio.service
+
+✅ BETTER: AWS Systems Manager Parameter Store
+   - Encrypted storage of secrets
+   - IAM-controlled access
+   - Audit trails of secret access
+
+✅ BEST: AWS Secrets Manager  
+   - Automatic rotation of passwords
+   - Integration with RDS
+   - Industry standard for production apps
+
+🛡️ PRODUCTION SECURITY CHECKLIST
+================================
+1. ✅ Use environment variables (minimum)
+2. ✅ Restrict RDS security group to EC2 only
+3. ✅ Use IAM roles instead of access keys
+4. ✅ Enable CloudTrail for monitoring
+5. ✅ Regular security updates on EC2
+6. ✅ Enable RDS encryption at rest
+7. ✅ Use HTTPS for frontend (CloudFront)
+
+💡 REMEMBER: Your current application.properties with hardcoded
+   passwords is ONLY for development. Never use in production!
 
 ⏱️ ESTIMATED SETUP TIME: 2-3 hours
 
