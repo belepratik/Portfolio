@@ -21,13 +21,17 @@ public class ExchangeWallet {
     private Long id;
 
     @NotBlank(message = "Exchange name is required")
-    @Column(name = "exchange_name", nullable = false, unique = true, length = 50)
+    @Column(name = "exchange_name", nullable = false, length = 50)
     private String exchangeName;
 
     @NotNull(message = "Total balance is required")
     @DecimalMin(value = "0.0", message = "Balance cannot be negative")
     @Column(name = "total_balance", nullable = false, precision = 18, scale = 2)
     private BigDecimal totalBalance;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false)
+    private User user;
 
     @Column(columnDefinition = "TEXT")
     private String notes;

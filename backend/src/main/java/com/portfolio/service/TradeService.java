@@ -6,6 +6,7 @@ import com.portfolio.model.ExchangeWallet;
 import com.portfolio.model.Trade;
 import com.portfolio.model.TradeStatus;
 import com.portfolio.model.TradeType;
+import com.portfolio.model.User;
 import com.portfolio.repository.ExchangeWalletRepository;
 import com.portfolio.repository.TradeRepository;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,10 @@ public class TradeService {
     private final ExchangeWalletRepository walletRepository;
     private final UserService userService;
 
+    private User getCurrentUser() {
+        return userService.getCurrentUser();
+    }
+
     // Create a new trade
     public Trade createTrade(Trade trade) {
         trade.setUser(userService.getCurrentUser());
@@ -38,15 +43,14 @@ public class TradeService {
     // Get all trades for current user
     @Transactional(readOnly = true)
     public List<Trade> getAllTrades() {
-        // For now, return all trades (will be filtered by user in repository later)
-        // In Phase 2, we'll add: return tradeRepository.findByUserId(userService.getCurrentUserId());
-        return tradeRepository.findAll();
+        return tradeRepository.findByUser(userService.getCurrentUser());
     }
 
     // Get trade by ID
     @Transactional(readOnly = true)
     public Optional<Trade> getTradeById(Long id) {
-        return tradeRepository.findById(id);
+        // Only return trade if it belongs to current user
+        return tradeRepository.findByIdAndUser(id, userService.getCurrentUser());
     }
 
     // Update trade
@@ -129,7 +133,7 @@ public class TradeService {
         }
         
         // Find the wallet for this exchange
-        Optional<ExchangeWallet> walletOpt = walletRepository.findByExchangeNameIgnoreCase(trade.getExchange());
+        Optional<ExchangeWallet> walletOpt = walletRepository.findByExchangeNameIgnoreCaseAndUser(trade.getExchange(), userService.getCurrentUser());
         if (walletOpt.isEmpty()) {
             return; // No wallet for this exchange, skip
         }
@@ -211,20 +215,21 @@ public class TradeService {
     // Get trade summary/statistics
     @Transactional(readOnly = true)
     public TradeSummaryDTO getTradeSummary() {
+        User currentUser = getCurrentUser();
         TradeSummaryDTO summary = new TradeSummaryDTO();
 
         // Total P&L (realized from closed trades)
-        BigDecimal realizedPnL = tradeRepository.getTotalProfitLoss();
+        BigDecimal realizedPnL = tradeRepository.getTotalProfitLossByUser(currentUser);
         summary.setRealizedPnL(realizedPnL != null ? realizedPnL : BigDecimal.ZERO);
         summary.setTotalProfitLoss(realizedPnL);
 
         // Portfolio tracking
-        BigDecimal totalInvested = tradeRepository.getTotalPositionSize();
-        BigDecimal openPositionSize = tradeRepository.getTotalOpenPositionSize();
+        BigDecimal totalInvested = tradeRepository.getTotalPositionSizeByUser(currentUser);
+        BigDecimal openPositionSize = tradeRepository.getTotalOpenPositionSizeByUser(currentUser);
         summary.setTotalInvested(totalInvested != null ? totalInvested : BigDecimal.ZERO);
         
         // Calculate unrealized P&L and current portfolio value from open trades
-        List<Trade> openTrades = tradeRepository.findByStatus(TradeStatus.OPEN);
+        List<Trade> openTrades = tradeRepository.findByStatusAndUser(TradeStatus.OPEN, currentUser);
         BigDecimal unrealizedPnL = BigDecimal.ZERO;
         BigDecimal currentValue = BigDecimal.ZERO;
         
@@ -266,11 +271,11 @@ public class TradeService {
         summary.setCurrentPortfolioValue(currentValue.add(realizedPnL != null ? realizedPnL : BigDecimal.ZERO));
 
         // Trade counts
-        Long totalClosed = tradeRepository.countClosedTrades();
-        Long winningTrades = tradeRepository.countWinningTrades();
-        Long losingTrades = tradeRepository.countLosingTrades();
+        Long totalClosed = tradeRepository.countClosedTradesByUser(currentUser);
+        Long winningTrades = tradeRepository.countWinningTradesByUser(currentUser);
+        Long losingTrades = tradeRepository.countLosingTradesByUser(currentUser);
 
-        summary.setTotalTrades(tradeRepository.count());
+        summary.setTotalTrades(tradeRepository.countByUser(currentUser));
         summary.setOpenTrades((long) openTrades.size());
         summary.setClosedTrades(totalClosed);
         summary.setWinningTrades(winningTrades);

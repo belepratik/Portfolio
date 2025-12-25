@@ -3,6 +3,7 @@ package com.portfolio.repository;
 import com.portfolio.model.Trade;
 import com.portfolio.model.TradeStatus;
 import com.portfolio.model.TradeType;
+import com.portfolio.model.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,15 +12,25 @@ import org.springframework.stereotype.Repository;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TradeRepository extends JpaRepository<Trade, Long> {
+
+    // Find trades by user
+    List<Trade> findByUser(User user);
+    
+    // Find trade by ID and user (for security)
+    Optional<Trade> findByIdAndUser(Long id, User user);
 
     // Find trades by coin
     List<Trade> findByCoinIgnoreCase(String coin);
 
     // Find trades by status
     List<Trade> findByStatus(TradeStatus status);
+
+    // Find trades by status and user
+    List<Trade> findByStatusAndUser(TradeStatus status, User user);
 
     // Find trades by type
     List<Trade> findByTradeType(TradeType tradeType);
@@ -29,6 +40,9 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
 
     // Find trades by exchange and status
     List<Trade> findByExchangeIgnoreCaseAndStatus(String exchange, TradeStatus status);
+
+    // Find trades by exchange and status and user
+    List<Trade> findByExchangeIgnoreCaseAndStatusAndUser(String exchange, TradeStatus status, User user);
 
     // Find trades between dates
     List<Trade> findByTradeDateBetween(LocalDateTime startDate, LocalDateTime endDate);
@@ -40,6 +54,10 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
     @Query("SELECT COALESCE(SUM(t.profitLoss), 0) FROM Trade t WHERE t.status = 'CLOSED'")
     BigDecimal getTotalProfitLoss();
 
+    // Get total profit/loss for a user
+    @Query("SELECT COALESCE(SUM(t.profitLoss), 0) FROM Trade t WHERE t.status = 'CLOSED' AND t.user = :user")
+    BigDecimal getTotalProfitLossByUser(@Param("user") User user);
+
     // Get total profit/loss for a date range
     @Query("SELECT COALESCE(SUM(t.profitLoss), 0) FROM Trade t WHERE t.status = 'CLOSED' AND t.closeDate BETWEEN :startDate AND :endDate")
     BigDecimal getTotalProfitLossBetweenDates(@Param("startDate") LocalDateTime startDate, @Param("endDate") LocalDateTime endDate);
@@ -48,13 +66,29 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
     @Query("SELECT COUNT(t) FROM Trade t WHERE t.status = 'CLOSED' AND t.profitLoss > 0")
     Long countWinningTrades();
 
+    // Count winning trades by user
+    @Query("SELECT COUNT(t) FROM Trade t WHERE t.status = 'CLOSED' AND t.profitLoss > 0 AND t.user = :user")
+    Long countWinningTradesByUser(@Param("user") User user);
+
     // Count losing trades
     @Query("SELECT COUNT(t) FROM Trade t WHERE t.status = 'CLOSED' AND t.profitLoss < 0")
     Long countLosingTrades();
 
+    // Count losing trades by user
+    @Query("SELECT COUNT(t) FROM Trade t WHERE t.status = 'CLOSED' AND t.profitLoss < 0 AND t.user = :user")
+    Long countLosingTradesByUser(@Param("user") User user);
+
     // Count total closed trades
     @Query("SELECT COUNT(t) FROM Trade t WHERE t.status = 'CLOSED'")
     Long countClosedTrades();
+
+    // Count total closed trades by user
+    @Query("SELECT COUNT(t) FROM Trade t WHERE t.status = 'CLOSED' AND t.user = :user")
+    Long countClosedTradesByUser(@Param("user") User user);
+
+    // Count total trades by user
+    @Query("SELECT COUNT(t) FROM Trade t WHERE t.user = :user")
+    Long countByUser(@Param("user") User user);
 
     // Get average profit of winning trades
     @Query("SELECT COALESCE(AVG(t.profitLoss), 0) FROM Trade t WHERE t.status = 'CLOSED' AND t.profitLoss > 0")
@@ -80,9 +114,17 @@ public interface TradeRepository extends JpaRepository<Trade, Long> {
     @Query("SELECT COALESCE(SUM(t.positionSize), 0) FROM Trade t WHERE t.status = 'OPEN'")
     BigDecimal getTotalOpenPositionSize();
 
+    // Get total position size (invested amount) for open trades by user
+    @Query("SELECT COALESCE(SUM(t.positionSize), 0) FROM Trade t WHERE t.status = 'OPEN' AND t.user = :user")
+    BigDecimal getTotalOpenPositionSizeByUser(@Param("user") User user);
+
     // Get total position size for all trades
     @Query("SELECT COALESCE(SUM(t.positionSize), 0) FROM Trade t")
     BigDecimal getTotalPositionSize();
+
+    // Get total position size for all trades by user
+    @Query("SELECT COALESCE(SUM(t.positionSize), 0) FROM Trade t WHERE t.user = :user")
+    BigDecimal getTotalPositionSizeByUser(@Param("user") User user);
 
     // Get total position size for closed trades
     @Query("SELECT COALESCE(SUM(t.positionSize), 0) FROM Trade t WHERE t.status = 'CLOSED'")

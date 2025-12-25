@@ -22,28 +22,30 @@ public class ExchangeWalletService {
 
     private final ExchangeWalletRepository walletRepository;
     private final TradeRepository tradeRepository;
+    private final UserService userService;
 
     public ExchangeWallet createWallet(ExchangeWallet wallet) {
+        wallet.setUser(userService.getCurrentUser());
         return walletRepository.save(wallet);
     }
 
     @Transactional(readOnly = true)
     public List<ExchangeWallet> getAllWallets() {
-        return walletRepository.findAll();
+        return walletRepository.findByUser(userService.getCurrentUser());
     }
 
     @Transactional(readOnly = true)
     public Optional<ExchangeWallet> getWalletById(Long id) {
-        return walletRepository.findById(id);
+        return walletRepository.findByIdAndUser(id, userService.getCurrentUser());
     }
 
     @Transactional(readOnly = true)
     public Optional<ExchangeWallet> getWalletByExchange(String exchangeName) {
-        return walletRepository.findByExchangeNameIgnoreCase(exchangeName);
+        return walletRepository.findByExchangeNameIgnoreCaseAndUser(exchangeName, userService.getCurrentUser());
     }
 
     public ExchangeWallet updateWallet(Long id, ExchangeWallet walletDetails) {
-        ExchangeWallet wallet = walletRepository.findById(id)
+        ExchangeWallet wallet = walletRepository.findByIdAndUser(id, userService.getCurrentUser())
                 .orElseThrow(() -> new RuntimeException("Wallet not found with id: " + id));
 
         wallet.setExchangeName(walletDetails.getExchangeName());
@@ -54,7 +56,7 @@ public class ExchangeWalletService {
     }
 
     public void deleteWallet(Long id) {
-        ExchangeWallet wallet = walletRepository.findById(id)
+        ExchangeWallet wallet = walletRepository.findByIdAndUser(id, userService.getCurrentUser())
                 .orElseThrow(() -> new RuntimeException("Wallet not found with id: " + id));
         walletRepository.delete(wallet);
     }
@@ -62,7 +64,7 @@ public class ExchangeWalletService {
     // Get wallet summary with used/available balance
     @Transactional(readOnly = true)
     public Map<String, Object> getWalletSummary(Long walletId) {
-        ExchangeWallet wallet = walletRepository.findById(walletId)
+        ExchangeWallet wallet = walletRepository.findByIdAndUser(walletId, userService.getCurrentUser())
                 .orElseThrow(() -> new RuntimeException("Wallet not found with id: " + walletId));
 
         return calculateWalletSummary(wallet);
@@ -71,7 +73,7 @@ public class ExchangeWalletService {
     // Get all wallets with summaries
     @Transactional(readOnly = true)
     public List<Map<String, Object>> getAllWalletSummaries() {
-        List<ExchangeWallet> wallets = walletRepository.findAll();
+        List<ExchangeWallet> wallets = walletRepository.findByUser(userService.getCurrentUser());
         return wallets.stream()
                 .map(this::calculateWalletSummary)
                 .toList();
@@ -79,8 +81,8 @@ public class ExchangeWalletService {
 
     private Map<String, Object> calculateWalletSummary(ExchangeWallet wallet) {
         // Get all open trades for this exchange
-        List<Trade> openTrades = tradeRepository.findByExchangeIgnoreCaseAndStatus(
-                wallet.getExchangeName(), TradeStatus.OPEN);
+        List<Trade> openTrades = tradeRepository.findByExchangeIgnoreCaseAndStatusAndUser(
+                wallet.getExchangeName(), TradeStatus.OPEN, userService.getCurrentUser());
 
         BigDecimal usedBalance = openTrades.stream()
                 .map(t -> t.getPositionSize() != null ? t.getPositionSize() : BigDecimal.ZERO)
@@ -104,7 +106,7 @@ public class ExchangeWalletService {
     // Get total balance across all exchanges
     @Transactional(readOnly = true)
     public BigDecimal getTotalBalance() {
-        BigDecimal total = walletRepository.getTotalBalance();
+        BigDecimal total = walletRepository.getTotalBalanceByUser(userService.getCurrentUser());
         return total != null ? total : BigDecimal.ZERO;
     }
 }

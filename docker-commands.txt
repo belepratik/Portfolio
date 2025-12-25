@@ -1,0 +1,95 @@
+PORTFOLIO APP - DOCKER COMMANDS CHEAT SHEET
+===========================================
+
+📋 BASIC OPERATIONS
+------------------
+# Start all services (detached mode)
+docker-compose up -d
+
+# Stop all services
+docker-compose down
+
+# Check running containers
+docker-compose ps
+
+# View logs
+docker-compose logs
+docker-compose logs backend
+docker-compose logs frontend
+
+
+🔄 REBUILD & RESTART
+--------------------
+# Rebuild backend after code changes
+docker-compose down
+docker-compose build --no-cache backend
+docker-compose up -d
+
+# Rebuild everything from scratch
+docker-compose down
+docker-compose build --no-cache
+docker-compose up -d
+
+
+🗄️ DATABASE OPERATIONS
+-----------------------
+# Connect to MySQL container
+docker exec -it portfolio-mysql mysql -u root -prootpassword
+
+# Backup database
+docker exec portfolio-mysql mysqldump -u root -prootpassword portfolio_db > backup.sql
+
+# Access phpMyAdmin
+# Open browser: http://localhost:8080
+# Username: portfolio_user
+# Password: portfolio_pass
+
+
+🧹 CLEANUP OPERATIONS
+---------------------
+# Remove all containers and volumes (CAUTION: Deletes all data!)
+docker-compose down -v
+
+# Clean unused Docker images/containers
+docker system prune -f
+
+
+🌐 ACCESS URLS
+--------------
+Frontend:     http://localhost:5174
+Backend API:  http://localhost:8083
+phpMyAdmin:   http://localhost:8080
+Database:     localhost:3307
+
+
+⚡ QUICK START (After Code Changes)
+-----------------------------------
+1. docker-compose down
+2. docker-compose build --no-cache backend
+3. docker-compose up -d
+4. Check status: docker-compose ps
+
+
+🔧 TROUBLESHOOTING
+------------------
+# View container logs if something fails
+docker-compose logs backend
+docker-compose logs mysql
+docker-compose logs frontend
+
+# Restart specific service
+docker-compose restart backend
+docker-compose restart mysql
+
+# Force recreate containers
+docker-compose up -d --force-recreate
+
+
+💾 CURRENT STATUS
+----------------
+✅ All services are running
+✅ Database is cleaned (fresh start)
+✅ Ready for new user registration
+✅ User isolation fixes applied
+
+No restart needed after database cleanup!
