@@ -1,17 +1,16 @@
-version: '3.8'
-
 services:
   # MySQL Database
   mysql:
     image: mysql:8.0
     container_name: portfolio-mysql
+    restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Priyabele1!}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
       MYSQL_DATABASE: ${MYSQL_DATABASE:-portfolio_db}
       MYSQL_USER: ${MYSQL_USER:-portfolio_user}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD:-portfolio_pass}
     ports:
-      - "3307:3306"
+      - "${MYSQL_PORT:-3307}:3306"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
@@ -19,6 +18,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
     networks:
       - portfolio-network
 
@@ -28,12 +28,14 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: portfolio-backend
+    restart: unless-stopped
     ports:
       - "${BACKEND_PORT:-8083}:8083"
     environment:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/${MYSQL_DATABASE:-portfolio_db}?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
       SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-Priyabele1!}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpassword}
+      SPRING_PROFILES_ACTIVE: docker
     depends_on:
       mysql:
         condition: service_healthy
@@ -46,6 +48,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: portfolio-frontend
+    restart: unless-stopped
     ports:
       - "${FRONTEND_PORT:-5174}:80"
     depends_on:
