@@ -1,0 +1,107 @@
+PORTFOLIO APP - CLOUD DEPLOYMENT GUIDE
+======================================
+
+🚀 RAILWAY DEPLOYMENT (RECOMMENDED - $5 FREE CREDIT)
+====================================================
+
+Prerequisites:
+- GitHub account
+- Railway account (sign up at railway.app)
+
+Step 1: Prepare Repository
+--------------------------
+✅ Code is already pushed to GitHub
+✅ Railway configuration files created
+✅ Application properties updated for cloud
+
+Step 2: Deploy Backend + Database on Railway
+--------------------------------------------
+1. Go to https://railway.app
+2. Click "Start a New Project"
+3. Select "Deploy from GitHub repo"
+4. Choose your Portfolio repository
+5. Railway will auto-detect the backend service
+
+6. Add MySQL Database:
+   - Click "Add Service" → "Database" → "MySQL"
+   - Railway will auto-provision and connect
+
+7. Configure Environment Variables:
+   - MYSQL_DATABASE=portfolio_db
+   - MYSQL_USER=portfolio_user
+   - MYSQL_PASSWORD=portfolio_pass
+   - PORT=8083
+
+8. Deploy and get backend URL (e.g., https://your-app.railway.app)
+
+Step 3: Deploy Frontend on Netlify/Vercel
+------------------------------------------
+Option A: Netlify (Easiest)
+1. Go to https://netlify.com
+2. Connect GitHub repository
+3. Build settings:
+   - Build command: cd frontend && npm run build
+   - Publish directory: frontend/dist
+4. Environment variable:
+   - VITE_API_URL=https://your-backend.railway.app
+
+Option B: Vercel
+1. Go to https://vercel.com
+2. Import GitHub project
+3. Framework: Vite
+4. Root directory: frontend
+5. Environment variable:
+   - VITE_API_URL=https://your-backend.railway.app
+
+🌐 ALTERNATIVE: RENDER (FREE TIER)
+==================================
+
+Step 1: Backend on Render
+--------------------------
+1. Go to https://render.com
+2. Create "Web Service" from GitHub
+3. Settings:
+   - Build Command: cd backend && ./mvnw clean package -DskipTests
+   - Start Command: java -jar target/*.jar
+   - Environment: Java 17
+
+Step 2: Database on Render
+---------------------------
+1. Create "PostgreSQL" service (free 90 days)
+2. Connect to backend via DATABASE_URL
+
+Step 3: Frontend on Render/Netlify
+-----------------------------------
+Same as above options
+
+💰 COST COMPARISON
+==================
+
+Railway: $5 free credit (lasts ~2-3 months)
+- Backend: $0.10/hour when active
+- MySQL: $0.20/hour when active
+- Generous sleep policy
+
+Render: Free tier (500 hours/month)
+- Backend: Free (sleeps after 15min)
+- Database: Free PostgreSQL (90 days)
+- Good for testing
+
+Netlify/Vercel: Unlimited free frontend hosting
+
+🎯 RECOMMENDED SETUP
+===================
+✅ Backend + MySQL: Railway ($5 credit)
+✅ Frontend: Netlify (free forever)
+✅ Domain: Provided by hosting services
+
+Total Cost: FREE for 2-3 months, then ~$15/month
+
+📋 NEXT STEPS
+=============
+1. Sign up for Railway account
+2. Follow deployment steps above
+3. Update frontend API URL
+4. Test the deployed application
+
+Need help? The configuration is ready - just follow the steps! 🚀

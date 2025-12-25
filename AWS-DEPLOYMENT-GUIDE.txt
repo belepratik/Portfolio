@@ -1,0 +1,135 @@
+AWS DEPLOYMENT GUIDE - FREE TIER
+===================================
+
+🎯 STRATEGY: AWS ECS + RDS (MySQL) + S3 (Frontend)
+- Backend: ECS Fargate (Free tier: 20GB storage + compute)
+- Database: RDS MySQL Free Tier (20GB storage, t3.micro)
+- Frontend: S3 + CloudFront (Free tier: 5GB + 50GB transfer)
+
+📋 PREREQUISITES
+----------------
+1. AWS Account (free tier eligible)
+2. AWS CLI installed
+3. Docker installed locally
+
+⚡ STEP-BY-STEP DEPLOYMENT
+==========================
+
+🔧 1. SETUP AWS CLI
+-------------------
+# Install AWS CLI
+https://aws.amazon.com/cli/
+
+# Configure credentials
+aws configure
+# Enter: Access Key ID, Secret Access Key, Region (us-east-1)
+
+🗄️ 2. CREATE RDS DATABASE
+--------------------------
+# Go to AWS Console > RDS
+1. Click "Create database"
+2. Choose "MySQL" (8.0.35)
+3. Template: "Free tier" 
+4. Settings:
+   - DB instance identifier: portfolio-db
+   - Master username: admin
+   - Master password: [create strong password]
+5. Instance configuration:
+   - DB instance class: db.t3.micro (free tier)
+   - Storage: 20 GiB (free tier limit)
+6. Connectivity:
+   - Public access: YES
+   - VPC security group: Create new > portfolio-sg
+7. Additional configuration:
+   - Initial database name: portfolio_db
+8. Click "Create database"
+
+🐳 3. DEPLOY BACKEND TO ECS
+---------------------------
+# Create ECR repository
+aws ecr create-repository --repository-name portfolio-backend --region us-east-1
+
+# Get login token
+aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin <account-id>.dkr.ecr.us-east-1.amazonaws.com
+
+# Build and tag image
+docker build -t portfolio-backend ./backend
+docker tag portfolio-backend:latest <account-id>.dkr.ecr.us-east-1.amazonaws.com/portfolio-backend:latest
+
+# Push to ECR
+docker push <account-id>.dkr.ecr.us-east-1.amazonaws.com/portfolio-backend:latest
+
+# Create ECS Cluster
+aws ecs create-cluster --cluster-name portfolio-cluster
+
+🌐 4. DEPLOY FRONTEND TO S3
+---------------------------
+# Build React app
+cd frontend
+npm run build
+
+# Create S3 bucket (must be globally unique name)
+aws s3 mb s3://portfolio-app-[your-unique-name]
+
+# Enable static website hosting
+aws s3 website s3://portfolio-app-[your-unique-name] --index-document index.html --error-document index.html
+
+# Upload build files
+aws s3 sync dist/ s3://portfolio-app-[your-unique-name] --delete
+
+# Set public read policy
+aws s3api put-bucket-policy --bucket portfolio-app-[your-unique-name] --policy '{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": "*",
+      "Action": "s3:GetObject",
+      "Resource": "arn:aws:s3:::portfolio-app-[your-unique-name]/*"
+    }
+  ]
+}'
+
+📱 5. CREATE ECS SERVICE
+------------------------
+# Go to AWS Console > ECS
+1. Click on portfolio-cluster
+2. Create new Task Definition:
+   - Launch type: Fargate
+   - Task name: portfolio-task
+   - Task memory: 512 MiB (free tier)
+   - Task CPU: 256 (.25 vCPU) (free tier)
+3. Add container:
+   - Name: portfolio-backend
+   - Image: <account-id>.dkr.ecr.us-east-1.amazonaws.com/portfolio-backend:latest
+   - Port mappings: 8080
+   - Environment variables:
+     * DB_HOST=<rds-endpoint>
+     * DB_USERNAME=admin
+     * DB_PASSWORD=<your-password>
+     * DB_NAME=portfolio_db
+4. Create Service:
+   - Service name: portfolio-service
+   - Number of tasks: 1
+   - Security group: Allow HTTP (80), Custom (8080)
+
+🔗 6. GET YOUR URLS
+-------------------
+Frontend: http://portfolio-app-[your-unique-name].s3-website-us-east-1.amazonaws.com
+Backend: http://[ecs-load-balancer-dns]:8080
+
+💰 FREE TIER LIMITS
+-------------------
+✅ RDS MySQL: 20GB storage, 750 hours/month (t3.micro)
+✅ ECS Fargate: 20GB storage, limited compute hours
+✅ S3: 5GB storage, 50GB transfer/month
+✅ Total cost: $0/month if within limits
+
+🚨 IMPORTANT SECURITY
+--------------------
+1. Update RDS security group to allow only ECS access
+2. Set strong database passwords
+3. Enable AWS CloudTrail for monitoring
+4. Regularly rotate access keys
+
+⏱️ ESTIMATED SETUP TIME: 2-3 hours
