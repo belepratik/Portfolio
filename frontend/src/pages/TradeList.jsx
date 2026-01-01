@@ -535,7 +535,7 @@ function TradeList() {
         flexWrap: 'wrap'
       }}>
         <span style={{ color: '#888', fontSize: '0.85rem', fontWeight: '500' }}>Live Prices:</span>
-        {['BTC', 'ETH', 'SOL', 'BNB'].map(coin => {
+        {Object.keys(livePrices).sort().map(coin => {
           const price = livePrices[coin]?.price;
           const change = livePrices[coin]?.change24h;
           return (

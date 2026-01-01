@@ -3,8 +3,8 @@
 
 const BINANCE_API = 'https://api.binance.com/api/v3';
 
-// Only the coins we need (trading pairs with USDT)
-const SUPPORTED_COINS = ['BTC', 'ETH', 'SOL', 'BNB'];
+// Commonly used coins for the UI (can be expanded)
+const POPULAR_COINS = ['BTC', 'ETH', 'SOL', 'BNB', 'LINK', 'ADA', 'DOT', 'AVAX', 'MATIC', 'UNI'];
 
 // Cache for prices
 let priceCache = {};
@@ -12,8 +12,8 @@ let lastFetchTime = 0;
 const CACHE_DURATION = 30000; // 30 seconds
 
 export const priceService = {
-  // Fetch prices for all supported coins
-  getPrices: async (symbols = SUPPORTED_COINS) => {
+  // Fetch prices for requested coins (defaults to popular ones)
+  getPrices: async (symbols = POPULAR_COINS) => {
     const now = Date.now();
     
     // Check cache
@@ -93,8 +93,8 @@ export const priceService = {
     lastFetchTime = 0;
   },
 
-  // Get supported coins
-  getSupportedCoins: () => SUPPORTED_COINS,
+  // Get popular coins list
+  getPopularCoins: () => POPULAR_COINS,
 };
 
 export default priceService;

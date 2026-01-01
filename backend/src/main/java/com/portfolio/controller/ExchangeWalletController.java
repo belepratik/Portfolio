@@ -6,6 +6,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -21,9 +22,27 @@ public class ExchangeWalletController {
     private final ExchangeWalletService walletService;
 
     @PostMapping
-    public ResponseEntity<ExchangeWallet> createWallet(@Valid @RequestBody ExchangeWallet wallet) {
-        ExchangeWallet created = walletService.createWallet(wallet);
-        return new ResponseEntity<>(created, HttpStatus.CREATED);
+    public ResponseEntity<?> createWallet(@Valid @RequestBody ExchangeWallet wallet) {
+        try {
+            System.out.println("🔍 CreateWallet request received for user: " + 
+                SecurityContextHolder.getContext().getAuthentication().getName());
+            System.out.println("🔍 Wallet data: Exchange=" + wallet.getExchangeName() + 
+                ", Balance=" + wallet.getTotalBalance());
+            
+            ExchangeWallet created = walletService.createWallet(wallet);
+            return new ResponseEntity<>(created, HttpStatus.CREATED);
+        } catch (RuntimeException e) {
+            System.err.println("❌ Error creating wallet: " + e.getMessage());
+            e.printStackTrace();
+            // Return error details for debugging
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            System.err.println("❌ Unexpected error: " + e.getMessage());
+            e.printStackTrace();
+            // Handle any other exceptions
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("error", "Failed to save wallet: " + e.getMessage()));
+        }
     }
 
     @GetMapping

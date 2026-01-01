@@ -28,6 +28,11 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+backend/.env.local
+
+# Local development scripts with credentials
+backend/start-local-dev.bat
+backend/start-local-dev.ps1
 
 # Logs
 *.log

@@ -10,7 +10,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "exchange_wallets")
+@Table(name = "exchange_wallets", 
+       uniqueConstraints = @UniqueConstraint(
+           name = "uk_exchange_user", 
+           columnNames = {"exchange_name", "user_id"}
+       ))
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

@@ -3,6 +3,7 @@ package com.portfolio.service;
 import com.portfolio.model.ExchangeWallet;
 import com.portfolio.model.Trade;
 import com.portfolio.model.TradeStatus;
+import com.portfolio.model.User;
 import com.portfolio.repository.ExchangeWalletRepository;
 import com.portfolio.repository.TradeRepository;
 import lombok.RequiredArgsConstructor;
@@ -25,8 +26,29 @@ public class ExchangeWalletService {
     private final UserService userService;
 
     public ExchangeWallet createWallet(ExchangeWallet wallet) {
-        wallet.setUser(userService.getCurrentUser());
-        return walletRepository.save(wallet);
+        User currentUser = userService.getCurrentUser();
+        wallet.setUser(currentUser);
+        
+        // Check if wallet already exists for this user and exchange
+        if (walletRepository.existsByExchangeNameIgnoreCaseAndUser(wallet.getExchangeName(), currentUser)) {
+            throw new RuntimeException("Wallet already exists for exchange: " + wallet.getExchangeName());
+        }
+        
+        // Validate exchange name is not empty
+        if (wallet.getExchangeName() == null || wallet.getExchangeName().trim().isEmpty()) {
+            throw new RuntimeException("Exchange name cannot be empty");
+        }
+        
+        // Validate total balance
+        if (wallet.getTotalBalance() == null || wallet.getTotalBalance().compareTo(BigDecimal.ZERO) < 0) {
+            throw new RuntimeException("Total balance must be greater than or equal to 0");
+        }
+        
+        try {
+            return walletRepository.save(wallet);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to save wallet: " + e.getMessage(), e);
+        }
     }
 
     @Transactional(readOnly = true)

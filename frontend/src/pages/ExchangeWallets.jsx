@@ -12,7 +12,7 @@ function ExchangeWallets() {
     notes: '',
   });
 
-  const exchanges = ['LBank', 'Aster', 'Gate.io', 'Binance', 'Bybit', 'OKX', 'Bitget', 'KuCoin', 'MEXC'];
+  const exchanges = ['LBank', 'Aster', 'Gate.io', 'Binance', 'Bybit', 'OKX', 'Bitget', 'KuCoin', 'MEXC', 'Weex', 'Blofin', 'HTX'];
 
   useEffect(() => {
     fetchWallets();

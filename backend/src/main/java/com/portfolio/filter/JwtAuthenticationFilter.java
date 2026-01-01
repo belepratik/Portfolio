@@ -34,7 +34,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String jwt;
         final String username;
         
+        System.out.println("🔍 JWT Filter - Request: " + request.getMethod() + " " + request.getRequestURI());
+        System.out.println("🔍 JWT Filter - Auth Header: " + (authHeader != null ? "Bearer ***" : "null"));
+        
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            System.out.println("❌ JWT Filter - No valid auth header, continuing without authentication");
             filterChain.doFilter(request, response);
             return;
         }
@@ -42,10 +46,13 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
         username = jwtUtil.extractUsername(jwt);
         
+        System.out.println("🔍 JWT Filter - Extracted username: " + username);
+        
         if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
             
             if (jwtUtil.validateToken(jwt, userDetails.getUsername())) {
+                System.out.println("✅ JWT Filter - Token valid for user: " + username);
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails,
                         null,
@@ -53,7 +60,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
+                System.out.println("✅ JWT Filter - Authentication set successfully");
+            } else {
+                System.out.println("❌ JWT Filter - Token validation failed");
             }
+        } else {
+            System.out.println("🔍 JWT Filter - Username null or authentication already exists");
         }
         filterChain.doFilter(request, response);
     }
