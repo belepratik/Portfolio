@@ -1,0 +1,70 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: portfolio-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword123
+      MYSQL_DATABASE: portfolio
+      MYSQL_USER: portfoliouser
+      MYSQL_PASSWORD: portfoliopass123
+    ports:
+      - "3306:3306"
+    volumes:
+      - portfolio_mysql_data:/var/lib/mysql
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - portfolio-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+
+  # Backend Service
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: portfolio-backend
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: docker
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/portfolio
+      SPRING_DATASOURCE_USERNAME: portfoliouser
+      SPRING_DATASOURCE_PASSWORD: portfoliopass123
+      JWT_SECRET: mySecretKey123456789012345678901234567890
+      CORS_ORIGINS: http://localhost:3000
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - portfolio-network
+
+  # Frontend Service
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: portfolio-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - portfolio-network
+
+# Named volumes for persistent data
+volumes:
+  portfolio_mysql_data:
+    driver: local
+
+# Custom network
+networks:
+  portfolio-network:
+    driver: bridge
