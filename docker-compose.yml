@@ -59,6 +59,25 @@ services:
     networks:
       - portfolio-network
 
+  # phpMyAdmin - Database UI
+  phpmyadmin:
+    image: phpmyadmin:5.2
+    container_name: portfolio-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      PMA_USER: portfoliouser
+      PMA_PASSWORD: portfoliopass123
+      MYSQL_ROOT_PASSWORD: rootpassword123
+    ports:
+      - "8081:80"
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - portfolio-network
+
 # Named volumes for persistent data
 volumes:
   portfolio_mysql_data:

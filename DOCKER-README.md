@@ -8,13 +8,13 @@ docker-compose up -d
 
 # 2. Open your browser
 # Frontend: http://localhost:3000
-# Backend API: http://localhost:8080
-```
+# Backend API: http://localhost:8080# Database UI: http://localhost:8081 (phpMyAdmin)```
 
 ## What Gets Created:
 - ✅ **MySQL Database** (persistent data storage)
 - ✅ **Spring Boot Backend** (API server)
 - ✅ **React Frontend** (web interface)
+- ✅ **phpMyAdmin** (database management UI)
 - ✅ **Automatic database initialization**
 - ✅ **Data persistence** (survives restarts)
 
@@ -60,6 +60,7 @@ docker-compose down -v
 4. Visit http://localhost:3000
 5. Register a new account
 6. Start trading!
+7. **View database**: http://localhost:8081 (login: portfoliouser / portfoliopass123)
 
 ## Troubleshooting:
 - **Port conflicts**: Change ports in docker-compose.yml
