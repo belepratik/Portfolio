@@ -1,6 +1,9 @@
 import { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
 
+// Use environment variable for API URL
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+
 const AuthContext = createContext(null);
 
 export const useAuth = () => {
@@ -21,7 +24,7 @@ export const AuthProvider = ({ children }) => {
         const validateToken = async () => {
             if (token) {
                 try {
-                    const response = await axios.get('http://localhost:8083/api/auth/validate', {
+                    const response = await axios.get(`${API_BASE_URL}/auth/validate`, {
                         headers: { Authorization: `Bearer ${token}` }
                     });
                     setUser(response.data.username);
@@ -37,7 +40,7 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const login = async (username, password) => {
-        const response = await axios.post('http://localhost:8083/api/auth/login', {
+        const response = await axios.post(`${API_BASE_URL}/auth/login`, {
             username,
             password
         });

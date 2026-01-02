@@ -549,7 +549,7 @@ function TradeList() {
               border: '1px solid var(--border-color)'
             }}>
               <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{coin}</span>
-              <span style={{ color: 'var(--accent-green)', fontWeight: '500' }}>
+              <span style={{ color: 'var(--accent-green)', fontWeight: '500', cursor: 'help' }} title={price ? `$${price}` : 'Loading...'}>
                 {price ? `$${price.toLocaleString('en-US', { maximumFractionDigits: price > 100 ? 0 : 2 })}` : '...'}
               </span>
               {change !== null && change !== undefined && (
@@ -719,16 +719,16 @@ function TradeList() {
                     </td>
                     <td style={{ fontSize: '0.85rem' }}>{trade.exchange || '-'}</td>
                     <td>{trade.leverage}x</td>
-                    <td style={{ whiteSpace: 'nowrap' }}>{formatPrice(trade.entryPrice)}</td>
-                    <td className={trade.tpHit ? 'profit' : ''} style={{ whiteSpace: 'nowrap' }}>
+                    <td style={{ whiteSpace: 'nowrap', cursor: 'help' }} title={trade.entryPrice ? `$${trade.entryPrice}` : '-'}>{formatPrice(trade.entryPrice)}</td>
+                    <td className={trade.tpHit ? 'profit' : ''} style={{ whiteSpace: 'nowrap', cursor: 'help' }} title={trade.takeProfit ? `$${trade.takeProfit}` : '-'}>
                       {trade.takeProfit ? formatPrice(trade.takeProfit) : '-'}
                       {trade.tpHit && <span style={{ marginLeft: '0.25rem' }}>✓</span>}
                     </td>
-                    <td className={trade.slHit ? 'loss' : ''} style={{ whiteSpace: 'nowrap' }}>
+                    <td className={trade.slHit ? 'loss' : ''} style={{ whiteSpace: 'nowrap', cursor: 'help' }} title={trade.stopLoss ? `$${trade.stopLoss}` : '-'}>
                       {trade.stopLoss ? formatPrice(trade.stopLoss) : '-'}
                       {trade.slHit && <span style={{ marginLeft: '0.25rem' }}>✗</span>}
                     </td>
-                    <td className={trade.liquidated ? 'loss' : ''} style={{ whiteSpace: 'nowrap' }}>
+                    <td className={trade.liquidated ? 'loss' : ''} style={{ whiteSpace: 'nowrap', cursor: 'help' }} title={trade.liquidationPrice ? `$${trade.liquidationPrice}` : '-'}>
                       {trade.liquidationPrice ? formatPrice(trade.liquidationPrice) : '-'}
                       {trade.liquidated && <span style={{ marginLeft: '0.25rem' }}>✗</span>}
                     </td>

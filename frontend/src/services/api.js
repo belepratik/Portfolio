@@ -1,11 +1,9 @@
 import axios from 'axios';
 
 // Use environment-specific API URL
-// Production: Uses VITE_API_URL environment variable
-// Docker: Uses nginx proxy (/api -> backend:8083/api)
+// Docker: Set via environment variable in docker-compose
 // Local: Uses direct backend URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || 
-                    (import.meta.env.MODE === 'production' ? '/api' : 'http://localhost:8083/api');
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

@@ -3,6 +3,9 @@ import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import './Login.css';
 
+// Use environment variable for API URL
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+
 function Register() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
@@ -17,7 +20,7 @@ function Register() {
         setLoading(true);
 
         try {
-            await axios.post('http://localhost:8083/api/auth/register', {
+            await axios.post(`${API_BASE_URL}/auth/register`, {
                 username,
                 password,
                 email
